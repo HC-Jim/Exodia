@@ -54,19 +54,36 @@ Google Maps SDK y WorkManager.
 ```
 app/src/main/java/com/example/myapplication/
 ├─ MainActivity.kt
-├─ conductor/
-│  ├─ model/            # Modelos de presentación y datos de ejemplo
-│  ├─ navigation/       # Navegador por pestañas (sin dependencias externas)
-│  └─ ui/
-│     ├─ InicioConductorScreen.kt
-│     ├─ ConfiguracionConductorScreen.kt
-│     ├─ EscanearQRScreen.kt
-│     ├─ RutaActivaScreen.kt
-│     ├─ AlumnosEntregadosScreen.kt
-│     ├─ ConductorApp.kt      # Scaffold + barra inferior
-│     └─ componentes/         # Avatar, mapa simulado, encabezados, chips
-└─ ui/theme/            # Paleta de marca y tema Material 3
+├─ data/                # Capa de datos
+│  ├─ models/           # DTOs / modelos de datos (API y tablas locales)
+│  ├─ repositories/     # Acceso a datos (hoy con datos de ejemplo)
+│  ├─ local/            # Persistencia local: Room / DataStore
+│  └─ remote/           # API REST y Firebase
+├─ domain/              # Capa de dominio
+│  ├─ entities/         # Objetos de negocio (Alumno, Conductor, Hijo…)
+│  └─ usecases/         # Casos de uso
+├─ ui/                  # Capa de presentación
+│  ├─ screens/
+│  │  ├─ auth/          # Selección de perfil / login
+│  │  ├─ dashboard/     # Pantallas principales + navegación por rol
+│  │  ├─ profile/       # Perfiles y configuración
+│  │  └─ secure/        # Escaneo QR / cámara
+│  ├─ components/       # Widgets reutilizables (avatar, mapa, chips…)
+│  └─ theme/            # Paleta de marca y tema Material 3
+├─ core/                # Utilidades transversales
+│  ├─ utils/            # Formateo, validaciones
+│  ├─ permissions/      # Permisos (cámara, ubicación, almacenamiento)
+│  └─ security/         # Cifrado, biometría, sesión
+└─ services/            # Servicios de plataforma
+   ├─ api/              # Cliente HTTP (Retrofit/OkHttp)
+   ├─ storage/          # Archivos locales / nube
+   └─ camera/           # Cámara y galería
 ```
+
+> Arquitectura **MVVM + Clean Architecture**. Las carpetas `data/models`,
+> `data/local`, `data/remote`, `domain/usecases`, `core/*` y `services/*`
+> contienen un archivo *placeholder* que documenta su propósito; se
+> implementarán en las siguientes fases.
 
 ---
 

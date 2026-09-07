@@ -1,0 +1,125 @@
+package com.example.myapplication.ui.screens.dashboard
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.myapplication.domain.entities.Alumno
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.domain.entities.EstadoEntrega
+import com.example.myapplication.data.repositories.MockConductor
+import com.example.myapplication.ui.components.EncabezadoConductor
+import com.example.myapplication.ui.components.InicialesAvatar
+import com.example.myapplication.ui.theme.SuccessGreen
+import com.example.myapplication.ui.theme.SuccessGreenBg
+import com.example.myapplication.ui.theme.TextPrimary
+import com.example.myapplication.ui.theme.TextSecondary
+
+@Composable
+fun AlumnosEntregadosScreen(modifier: Modifier = Modifier) {
+    val entregados = MockConductor.alumnos.filter { it.estado == EstadoEntrega.ENTREGADO }
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        EncabezadoConductor(titulo = "Conductor")
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessGreen)
+            Spacer(Modifier.size(8.dp))
+            Column {
+                Text("Alumnos Entregados", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
+                Text("${entregados.size} completados", color = TextSecondary, fontSize = 13.sp)
+            }
+        }
+        Spacer(Modifier.size(8.dp))
+
+        // LazyColumn con claves estables (sección 6.5 — rendimiento del documento)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 16.dp, end = 16.dp, bottom = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(entregados, key = { it.id }) { alumno ->
+                FilaAlumnoEntregado(alumno)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FilaAlumnoEntregado(alumno: Alumno) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        InicialesAvatar(nombre = alumno.nombre, tamano = 42.dp)
+        Spacer(Modifier.size(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(alumno.nombre, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 15.sp)
+            Text(
+                buildString {
+                    append(alumno.direccion)
+                    alumno.horaEntrega?.let { append(" · $it") }
+                },
+                color = TextSecondary,
+                fontSize = 12.sp
+            )
+        }
+        // Estado por ícono + texto, no solo color (accesibilidad, sección 6.4)
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(SuccessGreenBg)
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Entregado", color = SuccessGreen, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.size(4.dp))
+            Icon(Icons.Filled.CheckCircle, contentDescription = "Entregado", tint = SuccessGreen, modifier = Modifier.size(16.dp))
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun AlumnosEntregadosPreview() {
+    MyApplicationTheme {
+        AlumnosEntregadosScreen()
+    }
+}
