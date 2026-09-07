@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.screens.dashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,7 +47,8 @@ import com.example.myapplication.ui.theme.WarningAmber
 fun RutaActivaScreen(
     onVerLista: () -> Unit,
     onEscanearQR: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onContactar: () -> Unit = {}
 ) {
     val proxima = MockConductor.proximaEntrega
     Box(modifier = modifier.fillMaxSize()) {
@@ -148,6 +150,19 @@ fun RutaActivaScreen(
                     Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.size(8.dp))
                     Text("Escanear QR", fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = onVerLista,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp)
+                    ) { Text("Listado", fontSize = 13.sp) }
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = onContactar,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp)
+                    ) { Text("Contactar", fontSize = 13.sp) }
                 }
             }
         }

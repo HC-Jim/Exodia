@@ -1,6 +1,7 @@
 package com.example.myapplication.data.repositories
 
 import com.example.myapplication.domain.entities.Alumno
+import com.example.myapplication.domain.entities.ConductorPerfil
 import com.example.myapplication.domain.entities.EstadoEntrega
 import com.example.myapplication.domain.entities.PerfilConductor
 
@@ -24,6 +25,18 @@ object MockConductor {
     )
 
     val nombreCorto = "Marco Zuñiga"
+
+    /** Perfil propio del conductor que usa la app. */
+    val perfilConductor = ConductorPerfil(
+        nombre = "Rosa Melano",
+        celular = "961541515151",
+        correo = "jm@asdsad.mpsod.com",
+        contactoEmergencia = "9547845484",
+        dni = "78445564",
+        licencia = "Ad4c548u4d",
+        placa = "xdsdsad",
+        zona = "RUTA 2"
+    )
 
     val alumnos = listOf(
         Alumno("1", "José Fernández", "5° Prim.", "Av. Los Álamos 145", "Paradero 1", "07:12", EstadoEntrega.ENTREGADO),

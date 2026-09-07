@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +39,10 @@ import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
 @Composable
-fun AlumnosEntregadosScreen(modifier: Modifier = Modifier) {
+fun AlumnosEntregadosScreen(
+    modifier: Modifier = Modifier,
+    onRetroceder: (() -> Unit)? = null
+) {
     val entregados = MockConductor.alumnos.filter { it.estado == EstadoEntrega.ENTREGADO }
 
     Column(
@@ -46,7 +50,12 @@ fun AlumnosEntregadosScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        EncabezadoConductor(titulo = "Conductor")
+        EncabezadoConductor(
+            titulo = "Listado Estudiantes",
+            accionIcono = if (onRetroceder != null) Icons.AutoMirrored.Filled.ArrowBack else null,
+            accionDescripcion = "Volver",
+            onAccion = onRetroceder
+        )
 
         Row(
             modifier = Modifier

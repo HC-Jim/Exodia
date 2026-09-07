@@ -20,13 +20,17 @@ import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.screens.dashboard.RutaApoderado
 import com.example.myapplication.ui.screens.dashboard.TabApoderado
 import com.example.myapplication.ui.screens.dashboard.rememberNavegadorApoderado
+import com.example.myapplication.ui.screens.profile.ConfiguracionApoderadoScreen
 import com.example.myapplication.ui.screens.profile.PerfilAlumnoScreen
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.SurfaceMuted
 import com.example.myapplication.ui.theme.TextSecondary
 
 @Composable
-fun ApoderadoApp(modifier: Modifier = Modifier) {
+fun ApoderadoApp(
+    modifier: Modifier = Modifier,
+    onCerrarSesion: () -> Unit = {}
+) {
     val nav = rememberNavegadorApoderado()
     val overlay = nav.overlay
 
@@ -48,12 +52,15 @@ fun ApoderadoApp(modifier: Modifier = Modifier) {
                     onRetroceder = { nav.retroceder() },
                     onHijoClick = { nav.abrir(RutaApoderado.PERFIL_HIJO, it) },
                     onNotas = { nav.abrir(RutaApoderado.NOTAS) },
-                    onAsistencias = { nav.abrir(RutaApoderado.ASISTENCIAS) }
+                    onAsistencias = { nav.abrir(RutaApoderado.ASISTENCIAS) },
+                    onCerrarSesion = onCerrarSesion
                 )
 
                 RutaApoderado.NOTAS -> NotasScreen(onRetroceder = { nav.retroceder() })
 
                 RutaApoderado.ASISTENCIAS -> AsistenciasScreen(onRetroceder = { nav.retroceder() })
+
+                RutaApoderado.EVENTO -> EventoDetalleScreen(onRetroceder = { nav.retroceder() })
 
                 null -> when (nav.tab) {
                     TabApoderado.INICIO -> InicioApoderadoScreen(
@@ -66,15 +73,11 @@ fun ApoderadoApp(modifier: Modifier = Modifier) {
 
                     TabApoderado.SEGUIMIENTO -> SeguimientoApoderadoScreen()
 
-                    TabApoderado.COLEGIO -> ComunicadosScreen()
-
-                    TabApoderado.PERFIL -> PerfilAlumnoScreen(
-                        hijo = MockApoderado.maria,
-                        esConfiguracion = true,
-                        onHijoClick = { nav.abrir(RutaApoderado.PERFIL_HIJO, it) },
-                        onNotas = { nav.abrir(RutaApoderado.NOTAS) },
-                        onAsistencias = { nav.abrir(RutaApoderado.ASISTENCIAS) }
+                    TabApoderado.COLEGIO -> ComunicadosScreen(
+                        onComunicadoClick = { nav.abrir(RutaApoderado.EVENTO) }
                     )
+
+                    TabApoderado.PERFIL -> ConfiguracionApoderadoScreen()
                 }
             }
         }

@@ -7,57 +7,57 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.myapplication.ui.screens.dashboard.NavegadorConductor
-import com.example.myapplication.ui.screens.dashboard.RutaConductor
-import com.example.myapplication.ui.screens.dashboard.TabConductor
-import com.example.myapplication.ui.screens.dashboard.rememberNavegadorConductor
 import com.example.myapplication.ui.components.BarraInferiorConductor
-import com.example.myapplication.ui.screens.profile.ConfiguracionConductorScreen
+import com.example.myapplication.ui.screens.profile.AjustesScreen
+import com.example.myapplication.ui.screens.profile.PerfilConductorScreen
 import com.example.myapplication.ui.screens.secure.EscanearQRScreen
 
 /**
- * Contenedor del rol Conductor: gestiona la barra inferior, el intercambio de
- * pestañas y la superposición del escáner QR. Es un prototipo de navegación;
- * la lógica de negocio vivirá en ViewModel cuando se conecte la capa de datos.
+ * Contenedor del rol Conductor: barra inferior, pestañas y superposiciones
+ * (escáner QR, listado de entregados y contacto con estudiante).
  */
 @Composable
-fun ConductorApp(modifier: Modifier = Modifier) {
-    val navegador = rememberNavegadorConductor()
-    val enEscaner = navegador.overlay == RutaConductor.ESCANEAR_QR
+fun ConductorApp(
+    modifier: Modifier = Modifier,
+    onCerrarSesion: () -> Unit = {}
+) {
+    val nav = rememberNavegadorConductor()
+    val overlay = nav.overlay
 
-    BackHandler(enabled = enEscaner) { navegador.retroceder() }
+    BackHandler(enabled = overlay != null) { nav.retroceder() }
 
-    if (enEscaner) {
-        // Pantalla completa, sin barra inferior (uso mínimo en campo).
-        EscanearQRScreen(
-            onRetroceder = { navegador.retroceder() },
-            modifier = modifier.fillMaxSize()
-        )
+    if (overlay != null) {
+        // Superposiciones a pantalla completa, con su propio botón de retroceso.
+        Box(modifier.fillMaxSize()) {
+            when (overlay) {
+                RutaConductor.ESCANEAR_QR -> EscanearQRScreen(onRetroceder = { nav.retroceder() })
+                RutaConductor.ALUMNOS_ENTREGADOS -> AlumnosEntregadosScreen(onRetroceder = { nav.retroceder() })
+                RutaConductor.CONTACTO_ESTUDIANTE -> ContactoEstudianteScreen(onRetroceder = { nav.retroceder() })
+            }
+        }
         return
     }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        bottomBar = { BarraInferiorConductor(navegador) }
+        bottomBar = { BarraInferiorConductor(nav) }
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
-            when (navegador.tab) {
+            when (nav.tab) {
                 TabConductor.INICIO -> InicioConductorScreen(
-                    onIniciarRuta = { navegador.seleccionarTab(TabConductor.SEGUIMIENTO) },
-                    onFinalizarRuta = { navegador.seleccionarTab(TabConductor.COLEGIO) }
+                    onIniciarRuta = { nav.seleccionarTab(TabConductor.SEGUIMIENTO) },
+                    onFinalizarRuta = { nav.seleccionarTab(TabConductor.PERFIL) }
                 )
 
                 TabConductor.SEGUIMIENTO -> RutaActivaScreen(
-                    onVerLista = { navegador.seleccionarTab(TabConductor.COLEGIO) },
-                    onEscanearQR = { navegador.abrir(RutaConductor.ESCANEAR_QR) }
+                    onVerLista = { nav.abrir(RutaConductor.ALUMNOS_ENTREGADOS) },
+                    onEscanearQR = { nav.abrir(RutaConductor.ESCANEAR_QR) },
+                    onContactar = { nav.abrir(RutaConductor.CONTACTO_ESTUDIANTE) }
                 )
 
-                TabConductor.COLEGIO -> AlumnosEntregadosScreen()
+                TabConductor.PERFIL -> PerfilConductorScreen(onCerrarSesion = onCerrarSesion)
 
-                TabConductor.PERFIL -> ConfiguracionConductorScreen(
-                    onLlamar = {},
-                    onCerrarSesion = {}
-                )
+                TabConductor.AJUSTES -> AjustesScreen(onCerrarSesion = onCerrarSesion)
             }
         }
     }

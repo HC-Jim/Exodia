@@ -27,6 +27,19 @@ val AccentBlue = Color(0xFF3B82F6)
 val AccentPink = Color(0xFFEC4899)
 val WarningAmber = Color(0xFFF59E0B)
 
+// Identidad Colegio San Agustín
+val SanAgustinRed = Color(0xFF7A1F2B)
+val SanAgustinRedDark = Color(0xFF5C1620)
+val SanAgustinGold = Color(0xFFD9B36B)
+
+// Paleta modo oscuro ("Modo Black")
+val DarkBackground = Color(0xFF14141C)
+val DarkSurface = Color(0xFF1E1E28)
+val DarkSurfaceMuted = Color(0xFF2A2A36)
+val DarkTextPrimary = Color(0xFFF2F2F7)
+val DarkTextSecondary = Color(0xFFA8A8B8)
+val DarkDivider = Color(0xFF33333F)
+
 // Compat con la plantilla base
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)

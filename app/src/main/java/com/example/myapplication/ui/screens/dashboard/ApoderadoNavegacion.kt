@@ -28,7 +28,8 @@ enum class TabApoderado(val etiqueta: String, val icono: ImageVector) {
 enum class RutaApoderado {
     PERFIL_HIJO,
     NOTAS,
-    ASISTENCIAS
+    ASISTENCIAS,
+    EVENTO
 }
 
 class NavegadorApoderado(

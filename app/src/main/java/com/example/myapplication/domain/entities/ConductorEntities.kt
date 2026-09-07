@@ -31,3 +31,15 @@ data class PerfilConductor(
     val contactoRol: String,
     val contactoTelefono: String
 )
+
+/** Perfil propio del conductor (datos de su cuenta y del vehículo). */
+data class ConductorPerfil(
+    val nombre: String,
+    val celular: String,
+    val correo: String,
+    val contactoEmergencia: String,
+    val dni: String,
+    val licencia: String,
+    val placa: String,
+    val zona: String
+)

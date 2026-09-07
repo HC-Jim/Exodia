@@ -42,7 +42,10 @@ import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
 @Composable
-fun ComunicadosScreen(modifier: Modifier = Modifier) {
+fun ComunicadosScreen(
+    modifier: Modifier = Modifier,
+    onComunicadoClick: () -> Unit = {}
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -69,7 +72,7 @@ fun ComunicadosScreen(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(MockApoderado.comunicados, key = { it.id }) { com ->
-                TarjetaComunicado(com)
+                TarjetaComunicado(com, onClick = onComunicadoClick)
             }
         }
     }
@@ -110,12 +113,13 @@ private fun TiraSemanal() {
 }
 
 @Composable
-private fun TarjetaComunicado(comunicado: Comunicado) {
+private fun TarjetaComunicado(comunicado: Comunicado, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
