@@ -15,8 +15,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.FactCheck
+import androidx.compose.material.icons.filled.Grade
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +38,8 @@ import com.example.myapplication.domain.entities.Hijo
 import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.components.ChipsHijos
 import com.example.myapplication.ui.components.InicialesAvatar
+import com.example.myapplication.ui.components.MenuDesplegable
+import com.example.myapplication.ui.components.OpcionMenu
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
@@ -48,20 +52,32 @@ fun InicioApoderadoScreen(
     onCalendario: () -> Unit,
     onAsistencias: () -> Unit,
     onHijoClick: (Hijo) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNotas: () -> Unit = {},
+    onEventos: () -> Unit = {}
 ) {
+    val opcionesMenu = listOf(
+        OpcionMenu("Movilidad", Icons.Filled.DirectionsBus, onMovilidad),
+        OpcionMenu("Colegio", Icons.Filled.School, onColegio),
+        OpcionMenu("Calendario", Icons.Filled.CalendarMonth, onCalendario),
+        OpcionMenu("Asistencias", Icons.Filled.FactCheck, onAsistencias),
+        OpcionMenu("Notas", Icons.Filled.Grade, onNotas),
+        OpcionMenu("Eventos", Icons.Filled.Celebration, onEventos)
+    )
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Saludo + logo
+        // Menú desplegable + saludo + logo
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(start = 8.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            MenuDesplegable(opciones = opcionesMenu)
+            Spacer(Modifier.size(4.dp))
             InicialesAvatar(nombre = MockApoderado.nombrePadre, tamano = 46.dp)
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {

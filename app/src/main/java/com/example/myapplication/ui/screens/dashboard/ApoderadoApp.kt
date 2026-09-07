@@ -68,7 +68,9 @@ fun ApoderadoApp(
                         onColegio = { nav.seleccionarTab(TabApoderado.COLEGIO) },
                         onCalendario = { nav.seleccionarTab(TabApoderado.COLEGIO) },
                         onAsistencias = { nav.abrir(RutaApoderado.ASISTENCIAS) },
-                        onHijoClick = { nav.abrir(RutaApoderado.PERFIL_HIJO, it) }
+                        onHijoClick = { nav.abrir(RutaApoderado.PERFIL_HIJO, it) },
+                        onNotas = { nav.abrir(RutaApoderado.NOTAS) },
+                        onEventos = { nav.abrir(RutaApoderado.EVENTO) }
                     )
 
                     TabApoderado.SEGUIMIENTO -> SeguimientoApoderadoScreen()
