@@ -20,68 +20,100 @@ import com.example.myapplication.ui.theme.WarningAmber
 
 /**
  * Convierte los DTOs (JSON de la API) a las entidades del dominio que usan las pantallas.
- * El JSON no trae "color", así que aquí le asignamos uno según su posición en la lista.
+ * El JSON no trae "color", asi que aqui le asignamos uno segun su posicion en la lista.
  */
 
-// Paleta que se repite para dar color a las tarjetas.
+// Colores que se van repitiendo para las tarjetas.
 private val paleta = listOf(IndigoPrimary, AccentBlue, AccentPink, SuccessGreen, WarningAmber)
-private fun colorPorIndice(indice: Int): Color = paleta[indice % paleta.size]
+
+private fun colorPorIndice(indice: Int): Color {
+    val posicion = indice % paleta.size   // vuelve a empezar cuando se acaban los colores
+    return paleta[posicion]
+}
 
 // ---------- ALUMNO ----------
-fun AlumnoDto.aDominio(): Alumno = Alumno(
-    id = id.toString(),
-    nombre = nombre,
-    grado = grado ?: "",
-    direccion = direccion ?: "",
-    paradero = paradero ?: "",
-    horaEntrega = horaEntrega,
-    estado = when (estado) {
-        "ABORDO" -> EstadoEntrega.ABORDO
-        "ENTREGADO" -> EstadoEntrega.ENTREGADO
-        else -> EstadoEntrega.PENDIENTE
+fun AlumnoDto.aDominio(): Alumno {
+    // Convierte el texto del estado al enum del dominio.
+    val estadoEnum: EstadoEntrega
+    if (estado == "ABORDO") {
+        estadoEnum = EstadoEntrega.ABORDO
+    } else if (estado == "ENTREGADO") {
+        estadoEnum = EstadoEntrega.ENTREGADO
+    } else {
+        estadoEnum = EstadoEntrega.PENDIENTE
     }
-)
+
+    return Alumno(
+        id = id.toString(),
+        nombre = nombre,
+        grado = grado ?: "",
+        direccion = direccion ?: "",
+        paradero = paradero ?: "",
+        horaEntrega = horaEntrega,
+        estado = estadoEnum
+    )
+}
 
 // ---------- COMUNICADO ----------
-fun List<ComunicadoDto>.aComunicados(): List<Comunicado> = mapIndexed { i, dto ->
-    Comunicado(
-        id = dto.id.toString(),
-        titulo = dto.titulo,
-        detalle = dto.detalle ?: "",
-        fecha = dto.fecha ?: "",
-        color = colorPorIndice(i)
-    )
+fun List<ComunicadoDto>.aComunicados(): List<Comunicado> {
+    val lista = mutableListOf<Comunicado>()
+    for (i in this.indices) {
+        val dto = this[i]
+        val comunicado = Comunicado(
+            id = dto.id.toString(),
+            titulo = dto.titulo,
+            detalle = dto.detalle ?: "",
+            fecha = dto.fecha ?: "",
+            color = colorPorIndice(i)
+        )
+        lista.add(comunicado)
+    }
+    return lista
 }
 
 // ---------- NOTA ----------
-fun List<NotaDto>.aNotas(): List<Nota> = mapIndexed { i, dto ->
-    Nota(
-        id = dto.id.toString(),
-        curso = dto.curso,
-        detalle = dto.detalle ?: "",
-        valor = dto.valor ?: "",
-        color = colorPorIndice(i)
-    )
+fun List<NotaDto>.aNotas(): List<Nota> {
+    val lista = mutableListOf<Nota>()
+    for (i in this.indices) {
+        val dto = this[i]
+        val nota = Nota(
+            id = dto.id.toString(),
+            curso = dto.curso,
+            detalle = dto.detalle ?: "",
+            valor = dto.valor ?: "",
+            color = colorPorIndice(i)
+        )
+        lista.add(nota)
+    }
+    return lista
 }
 
-// ---------- UBICACIÓN ----------
-fun UbicacionDto.aDominio(): Ubicacion = Ubicacion(
-    movilidad = movilidad ?: "",
-    lat = lat,
-    lng = lng,
-    actualizado = actualizadoEn ?: ""
-)
-
 // ---------- HIJO ----------
-fun List<HijoDto>.aHijos(): List<Hijo> = mapIndexed { i, dto ->
-    Hijo(
-        id = dto.id.toString(),
-        nombre = dto.nombre,
-        grado = dto.grado ?: "",
-        movilidad = dto.movilidad ?: "",
-        paradero = dto.paradero ?: "",
-        contactoNombre = dto.contactoNombre ?: "",
-        contactoRol = dto.contactoRol ?: "",
-        color = colorPorIndice(i)
+fun List<HijoDto>.aHijos(): List<Hijo> {
+    val lista = mutableListOf<Hijo>()
+    for (i in this.indices) {
+        val dto = this[i]
+        val hijo = Hijo(
+            id = dto.id.toString(),
+            nombre = dto.nombre,
+            grado = dto.grado ?: "",
+            movilidad = dto.movilidad ?: "",
+            paradero = dto.paradero ?: "",
+            contactoNombre = dto.contactoNombre ?: "",
+            contactoRol = dto.contactoRol ?: "",
+            color = colorPorIndice(i)
+        )
+        lista.add(hijo)
+    }
+    return lista
+}
+
+// ---------- UBICACION ----------
+fun UbicacionDto.aDominio(): Ubicacion {
+    return Ubicacion(
+        movilidad = movilidad ?: "",
+        lat = lat,
+        lng = lng,
+        actualizado = actualizadoEn ?: ""
     )
 }

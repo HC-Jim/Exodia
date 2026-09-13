@@ -31,7 +31,7 @@ fun ChipsHijos(
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        hijos.forEach { hijo ->
+        for (hijo in hijos) {
             Surface(
                 onClick = { onHijoClick(hijo) },
                 modifier = Modifier.weight(1f),

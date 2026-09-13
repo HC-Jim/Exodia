@@ -48,7 +48,7 @@ fun MenuDesplegable(
             onDismissRequest = { abierto = false },
             containerColor = MaterialTheme.colorScheme.surface
         ) {
-            opciones.forEach { opcion ->
+            for (opcion in opciones) {
                 DropdownMenuItem(
                     text = { Text(opcion.etiqueta) },
                     onClick = {

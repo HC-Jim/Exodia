@@ -55,8 +55,28 @@ object MockConductor {
     )
 
     /** Próxima entrega pendiente (para la tarjeta de la ruta activa). */
-    val proximaEntrega: Alumno = alumnos.first { it.estado != EstadoEntrega.ENTREGADO }
+    val proximaEntrega: Alumno = buscarProximaEntrega()
 
     val totalAlumnos: Int = alumnos.size
-    val entregados: Int get() = alumnos.count { it.estado == EstadoEntrega.ENTREGADO }
+
+    val entregados: Int get() = contarEntregados()
+
+    private fun buscarProximaEntrega(): Alumno {
+        for (alumno in alumnos) {
+            if (alumno.estado != EstadoEntrega.ENTREGADO) {
+                return alumno
+            }
+        }
+        return alumnos[0]   // si todos fueron entregados, devuelve el primero
+    }
+
+    private fun contarEntregados(): Int {
+        var total = 0
+        for (alumno in alumnos) {
+            if (alumno.estado == EstadoEntrega.ENTREGADO) {
+                total = total + 1
+            }
+        }
+        return total
+    }
 }

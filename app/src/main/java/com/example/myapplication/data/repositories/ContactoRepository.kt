@@ -6,49 +6,51 @@ import com.example.myapplication.data.local.ContactoDbHelper
 import com.example.myapplication.domain.entities.ContactoEmergencia
 
 /**
- * Repositorio de contactos de emergencia (patrón Repository sobre SQLite).
+ * Repositorio de contactos de emergencia (patron Repository sobre SQLite).
  *
  * El ViewModel habla SOLO con este repositorio; no sabe que por debajo hay
- * SQLite. Si mañana se cambiara a Room o a una API, el ViewModel no cambiaría.
+ * SQLite. Si manana se cambiara a Room o a una API, el ViewModel no cambiaria.
  */
 class ContactoRepository(context: Context) {
 
     private val dbHelper = ContactoDbHelper(context)
 
-    /** Devuelve todos los contactos guardados (el más nuevo primero). */
+    /** Devuelve todos los contactos guardados (el mas nuevo primero). */
     fun listar(): List<ContactoEmergencia> {
         val lista = mutableListOf<ContactoEmergencia>()
+
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT id, nombre, telefono FROM ${ContactoDbHelper.TABLA} ORDER BY id DESC",
-            null
-        )
+        val consulta = "SELECT id, nombre, telefono FROM ${ContactoDbHelper.TABLA} ORDER BY id DESC"
+        val cursor = db.rawQuery(consulta, null)
+
         while (cursor.moveToNext()) {
-            lista.add(
-                ContactoEmergencia(
-                    id = cursor.getLong(0),
-                    nombre = cursor.getString(1),
-                    telefono = cursor.getString(2) ?: ""
-                )
-            )
+            val id = cursor.getLong(0)
+            val nombre = cursor.getString(1)
+            val telefono = cursor.getString(2) ?: ""
+
+            val contacto = ContactoEmergencia(id = id, nombre = nombre, telefono = telefono)
+            lista.add(contacto)
         }
         cursor.close()
+
         return lista
     }
 
     /** Inserta un contacto nuevo (CREATE). */
     fun agregar(nombre: String, telefono: String) {
+        val valores = ContentValues()
+        valores.put("nombre", nombre)
+        valores.put("telefono", telefono)
+
         val db = dbHelper.writableDatabase
-        val valores = ContentValues().apply {
-            put("nombre", nombre)
-            put("telefono", telefono)
-        }
         db.insert(ContactoDbHelper.TABLA, null, valores)
     }
 
     /** Borra un contacto por su id (DELETE). */
     fun borrar(id: Long) {
         val db = dbHelper.writableDatabase
-        db.delete(ContactoDbHelper.TABLA, "id = ?", arrayOf(id.toString()))
+        val condicion = "id = ?"
+        val argumentos = arrayOf(id.toString())
+        db.delete(ContactoDbHelper.TABLA, condicion, argumentos)
     }
 }

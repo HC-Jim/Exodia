@@ -41,11 +41,14 @@ fun InicialesAvatar(
     tamano: Dp = 44.dp,
     colorFondo: Color = IndigoLight
 ) {
-    val iniciales = nombre.trim()
-        .split(" ")
-        .filter { it.isNotBlank() }
-        .take(2)
-        .joinToString("") { it.first().uppercase() }
+    // Toma hasta 2 iniciales del nombre (ej. "Marco Zuniga" -> "MZ").
+    val partes = nombre.trim().split(" ")
+    var iniciales = ""
+    for (parte in partes) {
+        if (parte.isNotBlank() && iniciales.length < 2) {
+            iniciales = iniciales + parte.first().uppercase()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -130,7 +133,7 @@ fun BarraInferiorConductor(navegador: NavegadorConductor) {
         containerColor = Color.White,
         tonalElevation = 0.dp
     ) {
-        TabConductor.entries.forEach { destino ->
+        for (destino in TabConductor.entries) {
             val seleccionado = navegador.tab == destino && navegador.overlay == null
             NavigationBarItem(
                 selected = seleccionado,

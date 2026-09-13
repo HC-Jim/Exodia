@@ -27,12 +27,12 @@ import java.util.Locale
 /**
  * Repositorio central de datos con soporte OFFLINE.
  *
- * Estrategia "primero la red, si falla la caché":
+ * Estrategia "primero la red, si falla la cache":
  *   1. Intenta pedir a la API (Retrofit).
- *   2. Si responde -> guarda la respuesta en SQLite (caché) y la devuelve.
- *   3. Si NO hay internet -> devuelve lo último guardado en la caché.
+ *   2. Si responde -> guarda la respuesta en SQLite (cache) y la devuelve.
+ *   3. Si NO hay internet -> devuelve lo ultimo guardado en la cache.
  *
- * Además gestiona la cola de acciones pendientes y el historial de entregas.
+ * Ademas gestiona la cola de acciones pendientes y el historial de entregas.
  * Todo el trabajo pesado (red + SQLite) corre en Dispatchers.IO.
  */
 class DatosRepository(context: Context) {
@@ -43,44 +43,53 @@ class DatosRepository(context: Context) {
     private val formatoFecha = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
     // ==========================================================
-    //  COMUNICADOS (con caché)
+    //  COMUNICADOS (con cache)
     // ==========================================================
     suspend fun obtenerComunicados(): List<Comunicado> = withContext(Dispatchers.IO) {
         try {
-            val dtos = api.getComunicados()
-            guardarComunicadosEnCache(dtos)
+            val dtos = api.getComunicados()   // pide a la API
+            guardarComunicadosEnCache(dtos)   // guarda copia local
             dtos.aComunicados()
         } catch (e: Exception) {
-            leerComunicadosDeCache().aComunicados()   // sin internet: caché
+            leerComunicadosDeCache().aComunicados()   // sin internet: cache
         }
     }
 
     private fun guardarComunicadosEnCache(lista: List<ComunicadoDto>) {
         val base = db.writableDatabase
-        base.delete(OfflineDbHelper.T_COMUNICADOS, null, null)
+        base.delete(OfflineDbHelper.T_COMUNICADOS, null, null)   // borra lo viejo
+
         for (c in lista) {
-            val v = ContentValues().apply {
-                put("id", c.id); put("titulo", c.titulo)
-                put("detalle", c.detalle); put("fecha", c.fecha)
-            }
-            base.insert(OfflineDbHelper.T_COMUNICADOS, null, v)
+            val valores = ContentValues()
+            valores.put("id", c.id)
+            valores.put("titulo", c.titulo)
+            valores.put("detalle", c.detalle)
+            valores.put("fecha", c.fecha)
+            base.insert(OfflineDbHelper.T_COMUNICADOS, null, valores)
         }
     }
 
     private fun leerComunicadosDeCache(): List<ComunicadoDto> {
         val lista = mutableListOf<ComunicadoDto>()
-        val cursor = db.readableDatabase.rawQuery(
-            "SELECT id, titulo, detalle, fecha FROM ${OfflineDbHelper.T_COMUNICADOS} ORDER BY id", null
-        )
+
+        val consulta = "SELECT id, titulo, detalle, fecha FROM ${OfflineDbHelper.T_COMUNICADOS} ORDER BY id"
+        val cursor = db.readableDatabase.rawQuery(consulta, null)
         while (cursor.moveToNext()) {
-            lista.add(ComunicadoDto(cursor.getLong(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)))
+            val dto = ComunicadoDto(
+                id = cursor.getLong(0),
+                titulo = cursor.getString(1),
+                detalle = cursor.getString(2),
+                fecha = cursor.getString(3)
+            )
+            lista.add(dto)
         }
         cursor.close()
+
         return lista
     }
 
     // ==========================================================
-    //  NOTAS (con caché)
+    //  NOTAS (con cache)
     // ==========================================================
     suspend fun obtenerNotas(): List<Nota> = withContext(Dispatchers.IO) {
         try {
@@ -95,24 +104,33 @@ class DatosRepository(context: Context) {
     private fun guardarNotasEnCache(lista: List<NotaDto>) {
         val base = db.writableDatabase
         base.delete(OfflineDbHelper.T_NOTAS, null, null)
+
         for (n in lista) {
-            val v = ContentValues().apply {
-                put("id", n.id); put("curso", n.curso)
-                put("detalle", n.detalle); put("valor", n.valor)
-            }
-            base.insert(OfflineDbHelper.T_NOTAS, null, v)
+            val valores = ContentValues()
+            valores.put("id", n.id)
+            valores.put("curso", n.curso)
+            valores.put("detalle", n.detalle)
+            valores.put("valor", n.valor)
+            base.insert(OfflineDbHelper.T_NOTAS, null, valores)
         }
     }
 
     private fun leerNotasDeCache(): List<NotaDto> {
         val lista = mutableListOf<NotaDto>()
-        val cursor = db.readableDatabase.rawQuery(
-            "SELECT id, curso, detalle, valor FROM ${OfflineDbHelper.T_NOTAS} ORDER BY id", null
-        )
+
+        val consulta = "SELECT id, curso, detalle, valor FROM ${OfflineDbHelper.T_NOTAS} ORDER BY id"
+        val cursor = db.readableDatabase.rawQuery(consulta, null)
         while (cursor.moveToNext()) {
-            lista.add(NotaDto(cursor.getLong(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)))
+            val dto = NotaDto(
+                id = cursor.getLong(0),
+                curso = cursor.getString(1),
+                detalle = cursor.getString(2),
+                valor = cursor.getString(3)
+            )
+            lista.add(dto)
         }
         cursor.close()
+
         return lista
     }
 
@@ -124,135 +142,158 @@ class DatosRepository(context: Context) {
     }
 
     // ==========================================================
-    //  UBICACIÓN DEL BUS (seguimiento)
-    // ==========================================================
-    /** Apoderado: lee la última posición del bus (null si aún no hay). */
-    suspend fun obtenerUbicacion(movilidad: String): Ubicacion? = withContext(Dispatchers.IO) {
-        try {
-            api.getUbicacion(movilidad).aDominio()
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /** Conductor: envía su posición actual al servidor. */
-    suspend fun enviarUbicacion(movilidad: String, lat: Double, lng: Double) =
-        withContext(Dispatchers.IO) {
-            try {
-                api.enviarUbicacion(movilidad, UbicacionDto(lat = lat, lng = lng))
-            } catch (e: Exception) {
-                // sin conexión: se reintenta en el próximo envío
-            }
-            Unit
-        }
-
-    // ==========================================================
-    //  ALUMNOS (con caché + acciones pendientes aplicadas encima)
+    //  ALUMNOS (con cache + acciones pendientes aplicadas encima)
     // ==========================================================
     suspend fun obtenerAlumnos(): List<Alumno> = withContext(Dispatchers.IO) {
-        val dtos = try {
-            val remoto = api.getAlumnos()
-            guardarAlumnosEnCache(remoto)
-            remoto
+        // 1) Consigue los alumnos (de la API o, si no hay internet, de la cache).
+        var dtos: List<AlumnoDto>
+        try {
+            dtos = api.getAlumnos()
+            guardarAlumnosEnCache(dtos)
         } catch (e: Exception) {
-            leerAlumnosDeCache()
+            dtos = leerAlumnosDeCache()
         }
-        // Aplica los cambios de estado que aún no se han sincronizado.
+
+        // 2) Aplica los cambios de estado que aun no se han sincronizado.
         val pendientes = mapaPendientes()
-        dtos.map { dto ->
-            val estado = pendientes[dto.id] ?: dto.estado
-            dto.copy(estado = estado).aDominio()
+        val lista = mutableListOf<Alumno>()
+        for (dto in dtos) {
+            val estadoPendiente = pendientes[dto.id]
+            val dtoFinal = if (estadoPendiente != null) {
+                dto.copy(estado = estadoPendiente)   // usa el estado que falta enviar
+            } else {
+                dto                                   // usa el estado tal cual vino
+            }
+            lista.add(dtoFinal.aDominio())
         }
+        lista
     }
 
     private fun guardarAlumnosEnCache(lista: List<AlumnoDto>) {
         val base = db.writableDatabase
         base.delete(OfflineDbHelper.T_ALUMNOS, null, null)
-        for (a in lista) base.insert(OfflineDbHelper.T_ALUMNOS, null, valoresAlumno(a))
+        for (a in lista) {
+            base.insert(OfflineDbHelper.T_ALUMNOS, null, valoresAlumno(a))
+        }
     }
 
-    private fun valoresAlumno(a: AlumnoDto) = ContentValues().apply {
-        put("id", a.id); put("nombre", a.nombre); put("grado", a.grado)
-        put("direccion", a.direccion); put("paradero", a.paradero)
-        put("hora_entrega", a.horaEntrega); put("estado", a.estado)
+    private fun valoresAlumno(a: AlumnoDto): ContentValues {
+        val valores = ContentValues()
+        valores.put("id", a.id)
+        valores.put("nombre", a.nombre)
+        valores.put("grado", a.grado)
+        valores.put("direccion", a.direccion)
+        valores.put("paradero", a.paradero)
+        valores.put("hora_entrega", a.horaEntrega)
+        valores.put("estado", a.estado)
+        return valores
     }
 
     private fun leerAlumnosDeCache(): List<AlumnoDto> {
         val lista = mutableListOf<AlumnoDto>()
-        val cursor = db.readableDatabase.rawQuery(
-            "SELECT id, nombre, grado, direccion, paradero, hora_entrega, estado " +
-                "FROM ${OfflineDbHelper.T_ALUMNOS} ORDER BY id", null
-        )
+
+        val consulta = "SELECT id, nombre, grado, direccion, paradero, hora_entrega, estado " +
+            "FROM ${OfflineDbHelper.T_ALUMNOS} ORDER BY id"
+        val cursor = db.readableDatabase.rawQuery(consulta, null)
         while (cursor.moveToNext()) {
-            lista.add(
-                AlumnoDto(
-                    id = cursor.getLong(0), nombre = cursor.getString(1), grado = cursor.getString(2),
-                    direccion = cursor.getString(3), paradero = cursor.getString(4),
-                    horaEntrega = cursor.getString(5), estado = cursor.getString(6)
-                )
+            val dto = AlumnoDto(
+                id = cursor.getLong(0),
+                nombre = cursor.getString(1),
+                grado = cursor.getString(2),
+                direccion = cursor.getString(3),
+                paradero = cursor.getString(4),
+                horaEntrega = cursor.getString(5),
+                estado = cursor.getString(6)
             )
+            lista.add(dto)
         }
         cursor.close()
+
         return lista
     }
 
-    private fun leerAlumnoDeCache(id: Long): AlumnoDto? =
-        leerAlumnosDeCache().firstOrNull { it.id == id }
+    private fun leerAlumnoDeCache(id: Long): AlumnoDto? {
+        val alumnos = leerAlumnosDeCache()
+        for (a in alumnos) {
+            if (a.id == id) return a
+        }
+        return null
+    }
 
     // ==========================================================
     //  MARCAR ENTREGADO (offline-first) + HISTORIAL
     // ==========================================================
     /**
      * Marca un alumno como ENTREGADO:
-     *   - actualiza la caché local (la UI lo ve al instante),
+     *   - actualiza la cache local (la UI lo ve al instante),
      *   - registra la entrega en el historial,
      *   - intenta avisar a la API; si no hay internet, lo deja EN COLA.
      */
     suspend fun marcarEntregado(alumno: Alumno) = withContext(Dispatchers.IO) {
-        val id = alumno.id.toLongOrNull() ?: return@withContext
+        val id = alumno.id.toLongOrNull()
+        if (id == null) {
+            return@withContext
+        }
         val nuevoEstado = "ENTREGADO"
 
-        // 1) Caché local
-        db.writableDatabase.update(
-            OfflineDbHelper.T_ALUMNOS,
-            ContentValues().apply { put("estado", nuevoEstado) },
-            "id = ?", arrayOf(id.toString())
-        )
-        // 2) Historial
+        // 1) Actualiza la cache local.
+        val cambio = ContentValues()
+        cambio.put("estado", nuevoEstado)
+        db.writableDatabase.update(OfflineDbHelper.T_ALUMNOS, cambio, "id = ?", arrayOf(id.toString()))
+
+        // 2) Guarda la entrega en el historial.
         registrarEnHistorial(id, alumno.nombre, nuevoEstado)
 
-        // 3) Intentar sincronizar ya; si falla, encolar
+        // 3) Intenta sincronizar ya; si falla, lo deja en la cola.
         try {
-            val dto = (leerAlumnoDeCache(id) ?: alumnoDtoDesde(alumno)).copy(estado = nuevoEstado)
+            val enCache = leerAlumnoDeCache(id)
+            val dtoBase = enCache ?: alumnoDtoDesde(alumno)
+            val dto = dtoBase.copy(estado = nuevoEstado)
             api.actualizarAlumno(id, dto)
         } catch (e: Exception) {
             encolarPendiente(id, nuevoEstado)
         }
+        Unit
     }
 
-    private fun alumnoDtoDesde(a: Alumno) = AlumnoDto(
-        id = a.id.toLongOrNull() ?: 0,
-        nombre = a.nombre, grado = a.grado, direccion = a.direccion,
-        paradero = a.paradero, horaEntrega = a.horaEntrega, estado = a.estado.name
-    )
+    private fun alumnoDtoDesde(a: Alumno): AlumnoDto {
+        val id = a.id.toLongOrNull() ?: 0
+        return AlumnoDto(
+            id = id,
+            nombre = a.nombre,
+            grado = a.grado,
+            direccion = a.direccion,
+            paradero = a.paradero,
+            horaEntrega = a.horaEntrega,
+            estado = a.estado.name
+        )
+    }
 
     private fun registrarEnHistorial(alumnoId: Long, nombre: String, estado: String) {
-        val v = ContentValues().apply {
-            put("alumno_id", alumnoId); put("alumno_nombre", nombre)
-            put("estado", estado); put("fecha", formatoFecha.format(Date()))
-        }
-        db.writableDatabase.insert(OfflineDbHelper.T_HISTORIAL, null, v)
+        val valores = ContentValues()
+        valores.put("alumno_id", alumnoId)
+        valores.put("alumno_nombre", nombre)
+        valores.put("estado", estado)
+        valores.put("fecha", formatoFecha.format(Date()))
+        db.writableDatabase.insert(OfflineDbHelper.T_HISTORIAL, null, valores)
     }
 
     suspend fun obtenerHistorial(): List<RegistroHistorial> = withContext(Dispatchers.IO) {
         val lista = mutableListOf<RegistroHistorial>()
-        val cursor = db.readableDatabase.rawQuery(
-            "SELECT id, alumno_nombre, estado, fecha FROM ${OfflineDbHelper.T_HISTORIAL} ORDER BY id DESC", null
-        )
+
+        val consulta = "SELECT id, alumno_nombre, estado, fecha FROM ${OfflineDbHelper.T_HISTORIAL} ORDER BY id DESC"
+        val cursor = db.readableDatabase.rawQuery(consulta, null)
         while (cursor.moveToNext()) {
-            lista.add(RegistroHistorial(cursor.getLong(0), cursor.getString(1), cursor.getString(2), cursor.getString(3)))
+            val registro = RegistroHistorial(
+                id = cursor.getLong(0),
+                alumnoNombre = cursor.getString(1),
+                estado = cursor.getString(2),
+                fecha = cursor.getString(3)
+            )
+            lista.add(registro)
         }
         cursor.close()
+
         lista
     }
 
@@ -260,21 +301,26 @@ class DatosRepository(context: Context) {
     //  COLA DE ACCIONES PENDIENTES
     // ==========================================================
     private fun encolarPendiente(alumnoId: Long, nuevoEstado: String) {
-        val v = ContentValues().apply {
-            put("alumno_id", alumnoId); put("nuevo_estado", nuevoEstado)
-            put("creado", formatoFecha.format(Date()))
-        }
-        db.writableDatabase.insert(OfflineDbHelper.T_PENDIENTES, null, v)
+        val valores = ContentValues()
+        valores.put("alumno_id", alumnoId)
+        valores.put("nuevo_estado", nuevoEstado)
+        valores.put("creado", formatoFecha.format(Date()))
+        db.writableDatabase.insert(OfflineDbHelper.T_PENDIENTES, null, valores)
     }
 
     /** Mapa alumno_id -> nuevo_estado con lo que falta sincronizar. */
     private fun mapaPendientes(): Map<Long, String> {
         val mapa = mutableMapOf<Long, String>()
-        val cursor = db.readableDatabase.rawQuery(
-            "SELECT alumno_id, nuevo_estado FROM ${OfflineDbHelper.T_PENDIENTES}", null
-        )
-        while (cursor.moveToNext()) mapa[cursor.getLong(0)] = cursor.getString(1)
+
+        val consulta = "SELECT alumno_id, nuevo_estado FROM ${OfflineDbHelper.T_PENDIENTES}"
+        val cursor = db.readableDatabase.rawQuery(consulta, null)
+        while (cursor.moveToNext()) {
+            val alumnoId = cursor.getLong(0)
+            val estado = cursor.getString(1)
+            mapa[alumnoId] = estado
+        }
         cursor.close()
+
         return mapa
     }
 
@@ -289,32 +335,69 @@ class DatosRepository(context: Context) {
     }
 
     /**
-     * Envía a la API todas las acciones en cola. Cada una que se confirma se
-     * borra de la cola. Devuelve cuántas se sincronizaron.
+     * Envia a la API todas las acciones en cola. Cada una que se confirma se
+     * borra de la cola. Devuelve cuantas se sincronizaron.
      */
     suspend fun sincronizar(): Int = withContext(Dispatchers.IO) {
-        var enviadas = 0
-        val cursor = db.readableDatabase.rawQuery(
-            "SELECT id, alumno_id, nuevo_estado FROM ${OfflineDbHelper.T_PENDIENTES} ORDER BY id", null
-        )
-        // Copiamos primero para no mantener el cursor abierto durante la red.
-        data class Pend(val filaId: Long, val alumnoId: Long, val estado: String)
-        val pendientes = mutableListOf<Pend>()
+        // Primero leemos toda la cola a listas simples (para no tener el cursor
+        // abierto mientras hacemos las llamadas de red).
+        val idsFila = mutableListOf<Long>()
+        val idsAlumno = mutableListOf<Long>()
+        val estados = mutableListOf<String>()
+
+        val consulta = "SELECT id, alumno_id, nuevo_estado FROM ${OfflineDbHelper.T_PENDIENTES} ORDER BY id"
+        val cursor = db.readableDatabase.rawQuery(consulta, null)
         while (cursor.moveToNext()) {
-            pendientes.add(Pend(cursor.getLong(0), cursor.getLong(1), cursor.getString(2)))
+            idsFila.add(cursor.getLong(0))
+            idsAlumno.add(cursor.getLong(1))
+            estados.add(cursor.getString(2))
         }
         cursor.close()
 
-        for (p in pendientes) {
+        // Ahora intentamos enviar cada una.
+        var enviadas = 0
+        for (i in idsFila.indices) {
+            val filaId = idsFila[i]
+            val alumnoId = idsAlumno[i]
+            val estado = estados[i]
+
+            val enCache = leerAlumnoDeCache(alumnoId)
+            if (enCache == null) {
+                continue   // no tenemos datos del alumno; lo saltamos
+            }
+
             try {
-                val dto = (leerAlumnoDeCache(p.alumnoId) ?: continue).copy(estado = p.estado)
-                api.actualizarAlumno(p.alumnoId, dto)
-                db.writableDatabase.delete(OfflineDbHelper.T_PENDIENTES, "id = ?", arrayOf(p.filaId.toString()))
-                enviadas++
+                val dto = enCache.copy(estado = estado)
+                api.actualizarAlumno(alumnoId, dto)
+                db.writableDatabase.delete(OfflineDbHelper.T_PENDIENTES, "id = ?", arrayOf(filaId.toString()))
+                enviadas = enviadas + 1
             } catch (e: Exception) {
-                // Sigue sin internet: se queda en la cola para el próximo intento.
+                // sigue sin internet: se queda en la cola para el proximo intento
             }
         }
         enviadas
+    }
+
+    // ==========================================================
+    //  UBICACION DEL BUS (seguimiento)
+    // ==========================================================
+    /** Apoderado: lee la ultima posicion del bus (null si aun no hay). */
+    suspend fun obtenerUbicacion(movilidad: String): Ubicacion? = withContext(Dispatchers.IO) {
+        try {
+            api.getUbicacion(movilidad).aDominio()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** Conductor: envia su posicion actual al servidor. */
+    suspend fun enviarUbicacion(movilidad: String, lat: Double, lng: Double) = withContext(Dispatchers.IO) {
+        try {
+            val cuerpo = UbicacionDto(lat = lat, lng = lng)
+            api.enviarUbicacion(movilidad, cuerpo)
+        } catch (e: Exception) {
+            // sin conexion: se reintenta en el proximo envio
+        }
+        Unit
     }
 }

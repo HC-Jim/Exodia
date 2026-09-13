@@ -85,9 +85,24 @@ class AlumnosViewModel(app: Application) : AndroidViewModel(app) {
 
     // Alumnos ya entregados (para la pantalla de listado).
     val entregados: List<Alumno>
-        get() = alumnos.filter { it.estado == EstadoEntrega.ENTREGADO }
+        get() {
+            val lista = mutableListOf<Alumno>()
+            for (a in alumnos) {
+                if (a.estado == EstadoEntrega.ENTREGADO) {
+                    lista.add(a)
+                }
+            }
+            return lista
+        }
 
     // Próximo alumno por entregar (para la tarjeta de ruta activa).
     val proximaEntrega: Alumno?
-        get() = alumnos.firstOrNull { it.estado != EstadoEntrega.ENTREGADO }
+        get() {
+            for (a in alumnos) {
+                if (a.estado != EstadoEntrega.ENTREGADO) {
+                    return a
+                }
+            }
+            return null
+        }
 }

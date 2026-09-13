@@ -134,7 +134,8 @@ fun SeguimientoApoderadoScreen(
             Column(Modifier.padding(18.dp)) {
                 Text("Estado del recorrido", fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 16.sp)
                 Spacer(Modifier.size(12.dp))
-                MockApoderado.pasosRuta.forEachIndexed { index, paso ->
+                for (index in MockApoderado.pasosRuta.indices) {
+                    val paso = MockApoderado.pasosRuta[index]
                     PasoLinea(paso, esUltimo = index == MockApoderado.pasosRuta.lastIndex)
                 }
             }

@@ -17,8 +17,12 @@ object RetrofitCliente {
     private const val BASE_URL = "https://backend-appescolar.onrender.com/"
 
     // Muestra en el Logcat las peticiones/respuestas (útil para depurar).
-    private val logger = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    private val logger = crearLogger()
+
+    private fun crearLogger(): HttpLoggingInterceptor {
+        val interceptor = HttpLoggingInterceptor()
+        interceptor.level = HttpLoggingInterceptor.Level.BODY
+        return interceptor
     }
 
     private val cliente = OkHttpClient.Builder()

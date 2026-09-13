@@ -70,19 +70,30 @@ object MockApoderado {
     val nombreMes = "Septiembre 2026"
     const val diasDelMes = 30
     const val offsetPrimerDia = 2 // 1 de septiembre cae en martes (0=Dom)
-    val asistencia: Map<Int, EstadoAsistencia> = buildMap {
+    val asistencia: Map<Int, EstadoAsistencia> = crearAsistencia()
+
+    private fun crearAsistencia(): Map<Int, EstadoAsistencia> {
+        val mapa = mutableMapOf<Int, EstadoAsistencia>()
+
         for (dia in 1..diasDelMes) {
             val semana = (dia + offsetPrimerDia - 1) % 7 // 0=Dom ... 6=Sab
-            put(
-                dia,
-                when {
-                    semana == 0 || semana == 6 -> EstadoAsistencia.SIN_CLASE
-                    dia == 8 -> EstadoAsistencia.FALTA
-                    dia == 15 -> EstadoAsistencia.TARDANZA
-                    dia == 22 -> EstadoAsistencia.JUSTIFICADO
-                    else -> EstadoAsistencia.PRESENTE
-                }
-            )
+
+            val estado: EstadoAsistencia
+            if (semana == 0 || semana == 6) {
+                estado = EstadoAsistencia.SIN_CLASE
+            } else if (dia == 8) {
+                estado = EstadoAsistencia.FALTA
+            } else if (dia == 15) {
+                estado = EstadoAsistencia.TARDANZA
+            } else if (dia == 22) {
+                estado = EstadoAsistencia.JUSTIFICADO
+            } else {
+                estado = EstadoAsistencia.PRESENTE
+            }
+
+            mapa[dia] = estado
         }
+
+        return mapa
     }
 }

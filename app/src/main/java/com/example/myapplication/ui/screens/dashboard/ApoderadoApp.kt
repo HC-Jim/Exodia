@@ -89,7 +89,7 @@ fun ApoderadoApp(
 @Composable
 private fun BarraInferior(seleccionado: TabApoderado, onSelect: (TabApoderado) -> Unit) {
     NavigationBar(containerColor = Color.White, tonalElevation = 0.dp) {
-        TabApoderado.entries.forEach { destino ->
+        for (destino in TabApoderado.entries) {
             NavigationBarItem(
                 selected = destino == seleccionado,
                 onClick = { onSelect(destino) },

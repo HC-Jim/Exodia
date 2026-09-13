@@ -192,7 +192,9 @@ private fun FilaAlumnoEntregado(alumno: Alumno) {
             Text(
                 buildString {
                     append(alumno.direccion)
-                    alumno.horaEntrega?.let { append(" · $it") }
+                    if (alumno.horaEntrega != null) {
+                        append(" · " + alumno.horaEntrega)
+                    }
                 },
                 color = TextSecondary,
                 fontSize = 12.sp

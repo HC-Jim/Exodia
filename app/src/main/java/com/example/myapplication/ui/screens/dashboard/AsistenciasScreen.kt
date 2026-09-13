@@ -93,7 +93,7 @@ private fun CalendarioMes(
     ) {
         Column(Modifier.padding(12.dp)) {
             Row(Modifier.fillMaxWidth()) {
-                cabecera.forEach { d ->
+                for (d in cabecera) {
                     Text(
                         d,
                         modifier = Modifier.weight(1f),
@@ -168,21 +168,28 @@ private fun Leyenda() {
             .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items.chunked(2).forEach { fila ->
+        // Recorre la lista de 2 en 2 para armar filas de 2 elementos.
+        var indice = 0
+        while (indice < items.size) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                fila.forEach { estado ->
-                    Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            Modifier
-                                .size(14.dp)
-                                .clip(CircleShape)
-                                .background(estado.color)
-                        )
-                        Spacer(Modifier.size(8.dp))
-                        Text(estado.etiqueta, color = TextSecondary, fontSize = 13.sp)
+                for (col in 0 until 2) {
+                    val pos = indice + col
+                    if (pos < items.size) {
+                        val estado = items[pos]
+                        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                Modifier
+                                    .size(14.dp)
+                                    .clip(CircleShape)
+                                    .background(estado.color)
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(estado.etiqueta, color = TextSecondary, fontSize = 13.sp)
+                        }
                     }
                 }
             }
+            indice = indice + 2
         }
     }
 }

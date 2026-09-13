@@ -203,7 +203,7 @@ private fun SeccionContactos(vm: ContactosViewModel) {
         if (vm.contactos.isEmpty()) {
             Text("Aún no hay contactos guardados.", color = TextSecondary, fontSize = 13.sp)
         } else {
-            vm.contactos.forEach { contacto ->
+            for (contacto in vm.contactos) {
                 FilaContacto(contacto, onBorrar = { vm.borrar(contacto.id) })
             }
         }

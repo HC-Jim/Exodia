@@ -142,7 +142,8 @@ fun ContactoEstudianteScreen(
         Titulo("Detalles de la incidencia / observaciones")
         Column(Modifier.padding(horizontal = 16.dp)) {
             val opciones = listOf("Esperando 5 minutos", "Llamada sin respuesta", "Ubicación incorrecta")
-            opciones.forEachIndexed { i, texto ->
+            for (i in opciones.indices) {
+                val texto = opciones[i]
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

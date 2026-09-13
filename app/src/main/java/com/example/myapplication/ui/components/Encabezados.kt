@@ -77,7 +77,7 @@ fun ChipsAlumnos(
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        nombres.forEach { (nombre, color) ->
+        for ((nombre, color) in nombres) {
             Box(
                 modifier = Modifier
                     .weight(1f)

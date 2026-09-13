@@ -104,7 +104,7 @@ private fun TiraSemanal() {
             .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        dias.forEach { (letra, numero) ->
+        for ((letra, numero) in dias) {
             val activo = numero == seleccion
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
