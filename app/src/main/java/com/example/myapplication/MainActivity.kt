@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.myapplication.core.utils.AppSettings
+import com.example.myapplication.data.local.PreferenciasRepository
 import com.example.myapplication.ui.screens.auth.LoginScreen
 import com.example.myapplication.ui.screens.auth.Rol
 import com.example.myapplication.ui.screens.auth.SelectorRolScreen
@@ -32,6 +33,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Restaura las preferencias guardadas (SharedPreferences) ANTES de dibujar,
+        // para que la app abra ya con el modo oscuro / tamaño de letra elegidos.
+        val prefs = PreferenciasRepository(this)
+        AppSettings.modoOscuro = prefs.leerModoOscuro()
+        AppSettings.escalaTexto = prefs.leerEscalaTexto()
+        AppSettings.mantenerPantalla = prefs.leerMantenerPantalla()
+        AppSettings.silenciarNotificaciones = prefs.leerSilenciarNotificaciones()
+
         setContent {
             MyApplicationTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {

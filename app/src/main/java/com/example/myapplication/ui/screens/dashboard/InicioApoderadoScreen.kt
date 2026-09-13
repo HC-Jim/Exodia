@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entities.Hijo
 import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.components.ChipsHijos
@@ -54,7 +55,9 @@ fun InicioApoderadoScreen(
     onHijoClick: (Hijo) -> Unit,
     modifier: Modifier = Modifier,
     onNotas: () -> Unit = {},
-    onEventos: () -> Unit = {}
+    onEventos: () -> Unit = {},
+    // El ViewModel trae la lista de hijos desde la API.
+    viewModel: HijosViewModel = viewModel()
 ) {
     val opcionesMenu = listOf(
         OpcionMenu("Movilidad", Icons.Filled.DirectionsBus, onMovilidad),
@@ -100,7 +103,7 @@ fun InicioApoderadoScreen(
             }
         }
 
-        ChipsHijos(hijos = MockApoderado.hijos, onHijoClick = onHijoClick)
+        ChipsHijos(hijos = viewModel.hijos, onHijoClick = onHijoClick)
         Spacer(Modifier.height(20.dp))
 
         // Menú principal

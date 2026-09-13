@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Place
@@ -26,7 +27,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import com.example.myapplication.data.repositories.MockConductor
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,10 +49,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.repositories.MockConductor
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.components.MapaSimulado
 import com.example.myapplication.ui.theme.IndigoPrimary
+import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 import com.example.myapplication.ui.theme.WarningAmber
@@ -48,9 +63,47 @@ fun RutaActivaScreen(
     onVerLista: () -> Unit,
     onEscanearQR: () -> Unit,
     modifier: Modifier = Modifier,
-    onContactar: () -> Unit = {}
+    onContactar: () -> Unit = {},
+    viewModel: AlumnosViewModel = viewModel(),
+    ubicacionVM: UbicacionViewModel = viewModel()
 ) {
-    val proxima = MockConductor.proximaEntrega
+    val proxima = viewModel.proximaEntrega
+
+    // ---- Envío del GPS del conductor (seguimiento) ----
+    val context = LocalContext.current
+    val movilidad = MockConductor.perfil.movilidad
+
+    var tienePermiso by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED
+        )
+    }
+    // Pide el permiso de ubicación al abrir la pantalla.
+    val pedirPermiso = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido -> tienePermiso = concedido }
+
+    LaunchedEffect(Unit) {
+        if (!tienePermiso) pedirPermiso.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
+    // Con permiso, envía la posición al servidor cada 5 segundos.
+    LaunchedEffect(tienePermiso) {
+        if (tienePermiso) {
+            val fused = LocationServices.getFusedLocationProviderClient(context)
+            while (true) {
+                try {
+                    fused.lastLocation.addOnSuccessListener { loc ->
+                        if (loc != null) ubicacionVM.enviar(movilidad, loc.latitude, loc.longitude)
+                    }
+                } catch (e: SecurityException) {
+                    // sin permiso: no se envía
+                }
+                kotlinx.coroutines.delay(5000)
+            }
+        }
+    }
     Box(modifier = modifier.fillMaxSize()) {
         MapaSimulado(Modifier.fillMaxSize())
 
@@ -94,7 +147,7 @@ fun RutaActivaScreen(
                 shadowElevation = 3.dp
             ) {
                 Text(
-                    "Ver Lista (${MockConductor.totalAlumnos})",
+                    "Ver Lista (${viewModel.alumnos.size})",
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
@@ -130,26 +183,41 @@ fun RutaActivaScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(Modifier.padding(18.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Place, contentDescription = null, tint = IndigoPrimary, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.size(6.dp))
-                    Text("Próxima Entrega", color = TextSecondary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                }
-                Spacer(Modifier.height(6.dp))
-                Text(proxima.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
-                Text(proxima.direccion, color = TextSecondary, fontSize = 14.sp)
-                Spacer(Modifier.height(14.dp))
-                Button(
-                    onClick = onEscanearQR,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary)
-                ) {
-                    Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.size(8.dp))
-                    Text("Escanear QR", fontWeight = FontWeight.SemiBold)
+                if (proxima == null) {
+                    Text("Ruta completada 🎉", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
+                    Text("No quedan entregas pendientes", color = TextSecondary, fontSize = 14.sp)
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.Place, contentDescription = null, tint = IndigoPrimary, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.size(6.dp))
+                        Text("Próxima Entrega", color = TextSecondary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(proxima.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
+                    Text(proxima.direccion, color = TextSecondary, fontSize = 14.sp)
+                    Spacer(Modifier.height(14.dp))
+                    // Marca la entrega: guarda en SQLite, registra historial e intenta enviar a la API.
+                    Button(
+                        onClick = { viewModel.marcarEntregado(proxima) },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                    ) {
+                        Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.size(8.dp))
+                        Text("Marcar entregado", fontWeight = FontWeight.SemiBold)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = onEscanearQR,
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary)
+                    ) {
+                        Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.size(8.dp))
+                        Text("Escanear QR", fontWeight = FontWeight.SemiBold)
+                    }
                 }
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

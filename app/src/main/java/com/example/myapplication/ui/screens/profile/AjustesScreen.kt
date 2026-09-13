@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.core.utils.AppSettings
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.theme.DangerRed
@@ -53,7 +54,9 @@ import com.example.myapplication.ui.theme.TextSecondary
 fun AjustesScreen(
     modifier: Modifier = Modifier,
     onSoporte: () -> Unit = {},
-    onCerrarSesion: () -> Unit = {}
+    onCerrarSesion: () -> Unit = {},
+    // Guarda cada cambio en SharedPreferences (persiste entre sesiones).
+    viewModel: ConfiguracionViewModel = viewModel()
 ) {
     Column(
         modifier = modifier
@@ -74,7 +77,7 @@ fun AjustesScreen(
             icono = if (AppSettings.modoOscuro) Icons.Filled.DarkMode else Icons.Filled.LightMode,
             titulo = "Activar modo oscuro",
             valor = AppSettings.modoOscuro,
-            onCambio = { AppSettings.modoOscuro = it }
+            onCambio = { viewModel.setModoOscuro(it) }
         )
 
         // Tamaño de letra
@@ -87,7 +90,7 @@ fun AjustesScreen(
             }
             Slider(
                 value = AppSettings.escalaTexto,
-                onValueChange = { AppSettings.escalaTexto = it },
+                onValueChange = { viewModel.setEscalaTexto(it) },
                 valueRange = 0.85f..1.30f,
                 steps = 8
             )
@@ -97,13 +100,13 @@ fun AjustesScreen(
             icono = Icons.Filled.ScreenLockPortrait,
             titulo = "Mantener pantalla encendida",
             valor = AppSettings.mantenerPantalla,
-            onCambio = { AppSettings.mantenerPantalla = it }
+            onCambio = { viewModel.setMantenerPantalla(it) }
         )
         FilaSwitch(
             icono = Icons.Filled.NotificationsOff,
             titulo = "Silenciar notificaciones",
             valor = AppSettings.silenciarNotificaciones,
-            onCambio = { AppSettings.silenciarNotificaciones = it }
+            onCambio = { viewModel.setSilenciarNotificaciones(it) }
         )
 
         Spacer(Modifier.weight(1f))

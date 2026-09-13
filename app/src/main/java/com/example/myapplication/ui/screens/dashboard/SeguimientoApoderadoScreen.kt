@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,9 +43,30 @@ import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 import com.example.myapplication.ui.theme.WarningAmber
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
-fun SeguimientoApoderadoScreen(modifier: Modifier = Modifier) {
+fun SeguimientoApoderadoScreen(
+    modifier: Modifier = Modifier,
+    viewModel: UbicacionViewModel = viewModel()
+) {
+    // Movilidad del hijo: identifica el bus que se va a seguir.
+    val movilidad = MockApoderado.julio.movilidad
+
+    // Pregunta al servidor la posición del bus cada 4 segundos.
+    LaunchedEffect(Unit) {
+        while (true) {
+            viewModel.refrescar(movilidad)
+            kotlinx.coroutines.delay(4000)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -67,7 +89,18 @@ fun SeguimientoApoderadoScreen(modifier: Modifier = Modifier) {
         ChipsHijos(hijos = MockApoderado.hijos)
         Spacer(Modifier.size(12.dp))
 
-        // Mapa
+        // Mapa real de Google con el marcador del bus
+        val ubic = viewModel.ubicacion
+        val posicionInicial = LatLng(-12.046374, -77.042793) // Lima (mientras llega la 1ª posición)
+        val camara = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(posicionInicial, 14f)
+        }
+        // Cuando llega una posición nueva del bus, centra la cámara ahí.
+        LaunchedEffect(ubic) {
+            if (ubic != null) {
+                camara.position = CameraPosition.fromLatLngZoom(LatLng(ubic.lat, ubic.lng), 15f)
+            }
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,16 +108,16 @@ fun SeguimientoApoderadoScreen(modifier: Modifier = Modifier) {
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(20.dp))
         ) {
-            MapaSimulado(Modifier.fillMaxSize())
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(WarningAmber),
-                contentAlignment = Alignment.Center
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = camara
             ) {
-                Icon(Icons.Filled.DirectionsBus, contentDescription = "Bus", tint = Color.White, modifier = Modifier.size(22.dp))
+                if (ubic != null) {
+                    Marker(
+                        state = MarkerState(position = LatLng(ubic.lat, ubic.lng)),
+                        title = "Bus ${ubic.movilidad}"
+                    )
+                }
             }
         }
 

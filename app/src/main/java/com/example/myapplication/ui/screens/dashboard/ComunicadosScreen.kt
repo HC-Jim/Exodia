@@ -33,8 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entities.Comunicado
-import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -44,7 +44,9 @@ import com.example.myapplication.ui.theme.TextSecondary
 @Composable
 fun ComunicadosScreen(
     modifier: Modifier = Modifier,
-    onComunicadoClick: () -> Unit = {}
+    onComunicadoClick: () -> Unit = {},
+    // El ViewModel se crea solo; trae los comunicados desde la API.
+    viewModel: ComunicadosViewModel = viewModel()
 ) {
     Column(
         modifier = modifier
@@ -64,15 +66,28 @@ fun ComunicadosScreen(
         TiraSemanal()
         Spacer(Modifier.size(16.dp))
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                start = 16.dp, end = 16.dp, bottom = 16.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            items(MockApoderado.comunicados, key = { it.id }) { com ->
-                TarjetaComunicado(com, onClick = onComunicadoClick)
+        // Estado de la carga: mensaje mientras pide o si hubo error.
+        when {
+            viewModel.cargando -> Text(
+                "Cargando comunicados…",
+                modifier = Modifier.padding(20.dp),
+                color = TextSecondary
+            )
+            viewModel.error != null -> Text(
+                viewModel.error!!,
+                modifier = Modifier.padding(20.dp),
+                color = Color(0xFFEF4444)
+            )
+            else -> LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    start = 16.dp, end = 16.dp, bottom = 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(viewModel.comunicados, key = { it.id }) { com ->
+                    TarjetaComunicado(com, onClick = onComunicadoClick)
+                }
             }
         }
     }
