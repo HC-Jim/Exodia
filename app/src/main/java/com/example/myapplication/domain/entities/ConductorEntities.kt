@@ -19,7 +19,9 @@ data class Alumno(
     val direccion: String,
     val paradero: String,
     val horaEntrega: String? = null,
-    val estado: EstadoEntrega = EstadoEntrega.PENDIENTE
+    val estado: EstadoEntrega = EstadoEntrega.PENDIENTE,
+    val lat: Double? = null,   // coordenadas del punto de recojo
+    val lng: Double? = null
 )
 
 data class PerfilConductor(

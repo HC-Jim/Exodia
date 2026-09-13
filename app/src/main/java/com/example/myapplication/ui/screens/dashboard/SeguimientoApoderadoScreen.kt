@@ -24,6 +24,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,20 +53,34 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.example.myapplication.domain.entities.Hijo
 
 @Composable
 fun SeguimientoApoderadoScreen(
     modifier: Modifier = Modifier,
-    viewModel: UbicacionViewModel = viewModel()
+    viewModel: UbicacionViewModel = viewModel(),
+    hijosVM: HijosViewModel = viewModel()
 ) {
-    // Movilidad del hijo: identifica el bus que se va a seguir.
-    val movilidad = MockApoderado.julio.movilidad
+    // Hijo seleccionado (por defecto, el primero de la lista de hijos).
+    var hijoSeleccionado by remember { mutableStateOf<Hijo?>(null) }
+    LaunchedEffect(hijosVM.hijos) {
+        if (hijoSeleccionado == null && hijosVM.hijos.isNotEmpty()) {
+            hijoSeleccionado = hijosVM.hijos[0]
+        }
+    }
+
+    val hijo = hijoSeleccionado                     // copia local (más fácil de usar)
+    val movilidad = hijo?.movilidad ?: ""           // bus del estudiante seleccionado
 
     // Pregunta al servidor la posición del bus cada 4 segundos.
-    LaunchedEffect(Unit) {
+    LaunchedEffect(movilidad) {
         while (true) {
-            viewModel.refrescar(movilidad)
+            if (movilidad.isNotBlank()) {
+                viewModel.refrescar(movilidad)
+            }
             kotlinx.coroutines.delay(4000)
         }
     }
@@ -86,21 +104,36 @@ fun SeguimientoApoderadoScreen(
                 Text(MockApoderado.nombrePadre, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
-        ChipsHijos(hijos = MockApoderado.hijos)
+
+        // Chips de hijos: al tocar uno, se sigue a ese estudiante.
+        ChipsHijos(
+            hijos = hijosVM.hijos,
+            onHijoClick = { seleccionado -> hijoSeleccionado = seleccionado }
+        )
+        if (hijo != null) {
+            Text(
+                "Siguiendo a: ${hijo.nombre}",
+                modifier = Modifier.padding(start = 20.dp, top = 4.dp),
+                color = TextSecondary,
+                fontSize = 12.sp
+            )
+        }
         Spacer(Modifier.size(12.dp))
 
-        // Mapa real de Google con el marcador del bus
+        // Mapa: punto del estudiante + bus + línea entre ambos.
         val ubic = viewModel.ubicacion
-        val posicionInicial = LatLng(-12.046374, -77.042793) // Lima (mientras llega la 1ª posición)
+        val puntoEstudiante = puntoDeHijo(hijo)
+        val centroInicial = puntoEstudiante ?: LatLng(-12.020556, -76.957333)
         val camara = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(posicionInicial, 14f)
+            position = CameraPosition.fromLatLngZoom(centroInicial, 15f)
         }
-        // Cuando llega una posición nueva del bus, centra la cámara ahí.
-        LaunchedEffect(ubic) {
-            if (ubic != null) {
-                camara.position = CameraPosition.fromLatLngZoom(LatLng(ubic.lat, ubic.lng), 15f)
+        // Centra la cámara en el punto del estudiante cuando cambias de hijo.
+        LaunchedEffect(puntoEstudiante) {
+            if (puntoEstudiante != null) {
+                camara.position = CameraPosition.fromLatLngZoom(puntoEstudiante, 15f)
             }
         }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,10 +145,29 @@ fun SeguimientoApoderadoScreen(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = camara
             ) {
+                // Punto de recogida del estudiante (verde)
+                if (puntoEstudiante != null) {
+                    Marker(
+                        state = MarkerState(position = puntoEstudiante),
+                        title = hijo?.nombre ?: "Estudiante",
+                        snippet = hijo?.paradero,
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
+                    )
+                }
+                // Bus (naranja)
                 if (ubic != null) {
                     Marker(
                         state = MarkerState(position = LatLng(ubic.lat, ubic.lng)),
-                        title = "Bus ${ubic.movilidad}"
+                        title = "Bus ${ubic.movilidad}",
+                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
+                    )
+                }
+                // Línea del bus hacia el estudiante
+                if (ubic != null && puntoEstudiante != null) {
+                    Polyline(
+                        points = listOf(LatLng(ubic.lat, ubic.lng), puntoEstudiante),
+                        color = IndigoPrimary,
+                        width = 8f
                     )
                 }
             }
@@ -141,6 +193,14 @@ fun SeguimientoApoderadoScreen(
             }
         }
     }
+}
+
+/** Convierte las coordenadas del hijo en un punto del mapa (null si no tiene). */
+private fun puntoDeHijo(hijo: Hijo?): LatLng? {
+    if (hijo != null && hijo.lat != null && hijo.lng != null) {
+        return LatLng(hijo.lat, hijo.lng)
+    }
+    return null
 }
 
 @Composable

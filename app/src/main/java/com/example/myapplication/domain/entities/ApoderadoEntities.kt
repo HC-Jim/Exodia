@@ -17,7 +17,9 @@ data class Hijo(
     val paradero: String,
     val contactoNombre: String,
     val contactoRol: String,
-    val color: Color
+    val color: Color,
+    val lat: Double? = null,   // punto de recogida del estudiante
+    val lng: Double? = null
 )
 
 data class Comunicado(

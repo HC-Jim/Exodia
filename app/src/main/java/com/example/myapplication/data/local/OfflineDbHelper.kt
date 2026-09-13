@@ -18,7 +18,7 @@ class OfflineDbHelper(context: Context) :
 
     companion object {
         private const val NOMBRE_BD = "appescolar_offline.db"
-        private const val VERSION_BD = 1
+        private const val VERSION_BD = 2   // subida a 2: alumnos ahora guarda lat/lng
 
         const val T_COMUNICADOS = "cache_comunicados"
         const val T_NOTAS = "cache_notas"
@@ -40,7 +40,7 @@ class OfflineDbHelper(context: Context) :
         db.execSQL(
             "CREATE TABLE $T_ALUMNOS (" +
                 "id INTEGER PRIMARY KEY, nombre TEXT, grado TEXT, direccion TEXT, " +
-                "paradero TEXT, hora_entrega TEXT, estado TEXT)"
+                "paradero TEXT, hora_entrega TEXT, estado TEXT, lat REAL, lng REAL)"
         )
         // --- Cola de acciones pendientes de sincronizar ---
         db.execSQL(

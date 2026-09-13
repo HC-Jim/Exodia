@@ -1,44 +1,64 @@
 package com.example.myapplication.data.local
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.first
+
+// Crea UN solo DataStore llamado "ajustes" para toda la app.
+private val Context.dataStore by preferencesDataStore(name = "ajustes")
+
+/** Datos de apariencia leídos de una sola vez (para restaurar al iniciar). */
+data class AjustesGuardados(
+    val modoOscuro: Boolean,
+    val escalaTexto: Float,
+    val mantenerPantalla: Boolean,
+    val silenciarNotificaciones: Boolean
+)
 
 /**
- * Repositorio de preferencias de apariencia usando SharedPreferences.
+ * Repositorio de preferencias de apariencia usando DataStore.
  *
- * SharedPreferences guarda pares clave-valor en un XML privado de la app,
- * ideal para ajustes simples (modo oscuro, tamaño de letra, switches).
- * Los datos sobreviven aunque se cierre la app.
- *
- * (DataStore sería la alternativa moderna a SharedPreferences; aquí usamos
- *  SharedPreferences por su sintaxis directa.)
+ * DataStore es el reemplazo moderno de SharedPreferences: guarda pares
+ * clave-valor de forma asíncrona (con corrutinas), por eso los métodos son
+ * suspend. Los datos sobreviven aunque se cierre la app.
  */
-class PreferenciasRepository(context: Context) {
-
-    private val prefs = context.getSharedPreferences("ajustes_appescolar", Context.MODE_PRIVATE)
+class PreferenciasRepository(private val context: Context) {
 
     companion object {
-        private const val KEY_MODO_OSCURO = "modo_oscuro"
-        private const val KEY_ESCALA_TEXTO = "escala_texto"
-        private const val KEY_MANTENER = "mantener_pantalla"
-        private const val KEY_SILENCIAR = "silenciar_notificaciones"
+        private val MODO_OSCURO = booleanPreferencesKey("modo_oscuro")
+        private val ESCALA_TEXTO = floatPreferencesKey("escala_texto")
+        private val MANTENER = booleanPreferencesKey("mantener_pantalla")
+        private val SILENCIAR = booleanPreferencesKey("silenciar_notificaciones")
     }
 
-    // ---- Guardar (escribe y confirma con apply(), que es asíncrono) ----
-    fun guardarModoOscuro(valor: Boolean) =
-        prefs.edit().putBoolean(KEY_MODO_OSCURO, valor).apply()
+    // ---- Guardar (cada uno escribe una clave) ----
+    suspend fun guardarModoOscuro(valor: Boolean) {
+        context.dataStore.edit { ajustes -> ajustes[MODO_OSCURO] = valor }
+    }
 
-    fun guardarEscalaTexto(valor: Float) =
-        prefs.edit().putFloat(KEY_ESCALA_TEXTO, valor).apply()
+    suspend fun guardarEscalaTexto(valor: Float) {
+        context.dataStore.edit { ajustes -> ajustes[ESCALA_TEXTO] = valor }
+    }
 
-    fun guardarMantenerPantalla(valor: Boolean) =
-        prefs.edit().putBoolean(KEY_MANTENER, valor).apply()
+    suspend fun guardarMantenerPantalla(valor: Boolean) {
+        context.dataStore.edit { ajustes -> ajustes[MANTENER] = valor }
+    }
 
-    fun guardarSilenciarNotificaciones(valor: Boolean) =
-        prefs.edit().putBoolean(KEY_SILENCIAR, valor).apply()
+    suspend fun guardarSilenciarNotificaciones(valor: Boolean) {
+        context.dataStore.edit { ajustes -> ajustes[SILENCIAR] = valor }
+    }
 
-    // ---- Leer (con valor por defecto si aún no se ha guardado nada) ----
-    fun leerModoOscuro(): Boolean = prefs.getBoolean(KEY_MODO_OSCURO, false)
-    fun leerEscalaTexto(): Float = prefs.getFloat(KEY_ESCALA_TEXTO, 1f)
-    fun leerMantenerPantalla(): Boolean = prefs.getBoolean(KEY_MANTENER, false)
-    fun leerSilenciarNotificaciones(): Boolean = prefs.getBoolean(KEY_SILENCIAR, false)
+    // ---- Leer todo de una vez (con valores por defecto si aún no hay nada) ----
+    suspend fun leerAjustes(): AjustesGuardados {
+        val ajustes = context.dataStore.data.first()
+        return AjustesGuardados(
+            modoOscuro = ajustes[MODO_OSCURO] ?: false,
+            escalaTexto = ajustes[ESCALA_TEXTO] ?: 1f,
+            mantenerPantalla = ajustes[MANTENER] ?: false,
+            silenciarNotificaciones = ajustes[SILENCIAR] ?: false
+        )
+    }
 }

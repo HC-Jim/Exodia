@@ -34,13 +34,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Restaura las preferencias guardadas (SharedPreferences) ANTES de dibujar,
+        // Restaura las preferencias guardadas (DataStore) ANTES de dibujar,
         // para que la app abra ya con el modo oscuro / tamaño de letra elegidos.
+        // Es una lectura pequeña y única, por eso se hace con runBlocking al inicio.
         val prefs = PreferenciasRepository(this)
-        AppSettings.modoOscuro = prefs.leerModoOscuro()
-        AppSettings.escalaTexto = prefs.leerEscalaTexto()
-        AppSettings.mantenerPantalla = prefs.leerMantenerPantalla()
-        AppSettings.silenciarNotificaciones = prefs.leerSilenciarNotificaciones()
+        val ajustes = kotlinx.coroutines.runBlocking { prefs.leerAjustes() }
+        AppSettings.modoOscuro = ajustes.modoOscuro
+        AppSettings.escalaTexto = ajustes.escalaTexto
+        AppSettings.mantenerPantalla = ajustes.mantenerPantalla
+        AppSettings.silenciarNotificaciones = ajustes.silenciarNotificaciones
 
         setContent {
             MyApplicationTheme {

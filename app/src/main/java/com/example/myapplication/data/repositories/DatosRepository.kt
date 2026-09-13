@@ -186,16 +186,22 @@ class DatosRepository(context: Context) {
         valores.put("paradero", a.paradero)
         valores.put("hora_entrega", a.horaEntrega)
         valores.put("estado", a.estado)
+        valores.put("lat", a.lat)
+        valores.put("lng", a.lng)
         return valores
     }
 
     private fun leerAlumnosDeCache(): List<AlumnoDto> {
         val lista = mutableListOf<AlumnoDto>()
 
-        val consulta = "SELECT id, nombre, grado, direccion, paradero, hora_entrega, estado " +
+        val consulta = "SELECT id, nombre, grado, direccion, paradero, hora_entrega, estado, lat, lng " +
             "FROM ${OfflineDbHelper.T_ALUMNOS} ORDER BY id"
         val cursor = db.readableDatabase.rawQuery(consulta, null)
         while (cursor.moveToNext()) {
+            // lat/lng pueden venir vacios (null) en la base
+            val lat = if (cursor.isNull(7)) null else cursor.getDouble(7)
+            val lng = if (cursor.isNull(8)) null else cursor.getDouble(8)
+
             val dto = AlumnoDto(
                 id = cursor.getLong(0),
                 nombre = cursor.getString(1),
@@ -203,7 +209,9 @@ class DatosRepository(context: Context) {
                 direccion = cursor.getString(3),
                 paradero = cursor.getString(4),
                 horaEntrega = cursor.getString(5),
-                estado = cursor.getString(6)
+                estado = cursor.getString(6),
+                lat = lat,
+                lng = lng
             )
             lista.add(dto)
         }

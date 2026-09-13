@@ -17,7 +17,9 @@ data class AlumnoDto(
     val direccion: String?,
     val paradero: String?,
     @SerializedName("hora_entrega") val horaEntrega: String?,
-    val estado: String?
+    val estado: String?,
+    val lat: Double? = null,
+    val lng: Double? = null
 )
 
 data class ComunicadoDto(
@@ -41,7 +43,9 @@ data class HijoDto(
     val movilidad: String?,
     val paradero: String?,
     @SerializedName("contacto_nombre") val contactoNombre: String?,
-    @SerializedName("contacto_rol") val contactoRol: String?
+    @SerializedName("contacto_rol") val contactoRol: String?,
+    val lat: Double? = null,
+    val lng: Double? = null
 )
 
 /** Ubicación del bus (seguimiento en el mapa). */

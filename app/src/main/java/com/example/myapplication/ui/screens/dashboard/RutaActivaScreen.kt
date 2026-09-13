@@ -50,8 +50,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.domain.entities.Alumno
+import com.example.myapplication.domain.entities.EstadoEntrega
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import com.example.myapplication.ui.components.MapaSimulado
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
@@ -67,11 +76,17 @@ fun RutaActivaScreen(
     viewModel: AlumnosViewModel = viewModel(),
     ubicacionVM: UbicacionViewModel = viewModel()
 ) {
-    val proxima = viewModel.proximaEntrega
-
     // ---- Envío del GPS del conductor (seguimiento) ----
     val context = LocalContext.current
     val movilidad = MockConductor.perfil.movilidad
+
+    // Punto de referencia: 12°01'14.0"S 76°57'26.4"W
+    val puntoReferencia = LatLng(-12.020556, -76.957333)
+    // Posición del conductor: empieza en el punto de referencia y se actualiza con el GPS.
+    var posConductor by remember { mutableStateOf(puntoReferencia) }
+
+    // Próximo estudiante a recoger: el pendiente más cercano al conductor.
+    val proxima = estudianteMasCercano(viewModel.alumnos, posConductor)
 
     var tienePermiso by remember {
         mutableStateOf(
@@ -95,7 +110,10 @@ fun RutaActivaScreen(
             while (true) {
                 try {
                     fused.lastLocation.addOnSuccessListener { loc ->
-                        if (loc != null) ubicacionVM.enviar(movilidad, loc.latitude, loc.longitude)
+                        if (loc != null) {
+                            posConductor = LatLng(loc.latitude, loc.longitude)
+                            ubicacionVM.enviar(movilidad, loc.latitude, loc.longitude)
+                        }
                     }
                 } catch (e: SecurityException) {
                     // sin permiso: no se envía
@@ -104,21 +122,55 @@ fun RutaActivaScreen(
             }
         }
     }
-    Box(modifier = modifier.fillMaxSize()) {
-        MapaSimulado(Modifier.fillMaxSize())
+    // Cámara del mapa: arranca centrada en el punto de referencia.
+    val camara = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(puntoReferencia, 15f)
+    }
 
-        // Marcador del bus
-        MarcadorMapa(
-            texto = "🚌",
-            fondo = WarningAmber,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(bottom = 40.dp)
-        )
-        // Marcadores de alumnos
-        MarcadorMapa("A", IndigoPrimary, Modifier.align(Alignment.TopStart).padding(start = 60.dp, top = 120.dp))
-        MarcadorMapa("B", IndigoPrimary, Modifier.align(Alignment.TopEnd).padding(end = 70.dp, top = 160.dp))
-        MarcadorMapa("C", IndigoPrimary, Modifier.align(Alignment.CenterEnd).padding(end = 40.dp))
+    Box(modifier = modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = camara
+        ) {
+            // 1) Un punto por cada estudiante que tenga coordenadas.
+            for (alumno in viewModel.alumnos) {
+                if (alumno.lat != null && alumno.lng != null) {
+                    val esProximo = proxima != null && alumno.id == proxima.id
+
+                    val colorMarcador: Float
+                    if (alumno.estado == EstadoEntrega.ENTREGADO) {
+                        colorMarcador = BitmapDescriptorFactory.HUE_GREEN     // ya entregado
+                    } else if (esProximo) {
+                        colorMarcador = BitmapDescriptorFactory.HUE_ORANGE    // próximo a recoger
+                    } else {
+                        colorMarcador = BitmapDescriptorFactory.HUE_RED       // pendiente
+                    }
+
+                    Marker(
+                        state = MarkerState(position = LatLng(alumno.lat, alumno.lng)),
+                        title = alumno.nombre,
+                        snippet = alumno.paradero,
+                        icon = BitmapDescriptorFactory.defaultMarker(colorMarcador)
+                    )
+                }
+            }
+
+            // 2) El punto del conductor (azul).
+            Marker(
+                state = MarkerState(position = posConductor),
+                title = "Conductor",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+            )
+
+            // 3) Línea del conductor hacia el próximo estudiante a recoger.
+            if (proxima != null && proxima.lat != null && proxima.lng != null) {
+                Polyline(
+                    points = listOf(posConductor, LatLng(proxima.lat, proxima.lng)),
+                    color = IndigoPrimary,
+                    width = 8f
+                )
+            }
+        }
 
         // Cabecera superior
         Row(
@@ -158,7 +210,7 @@ fun RutaActivaScreen(
 
         // Botón de recentrar
         Surface(
-            onClick = {},
+            onClick = { camara.position = CameraPosition.fromLatLngZoom(posConductor, 15f) },
             shape = CircleShape,
             color = Color.White,
             shadowElevation = 4.dp,
@@ -235,6 +287,29 @@ fun RutaActivaScreen(
             }
         }
     }
+}
+
+/**
+ * Devuelve el estudiante PENDIENTE (no entregado) más cercano a una posición.
+ * Compara la distancia (al cuadrado, que basta para saber cuál es el menor).
+ */
+private fun estudianteMasCercano(alumnos: List<Alumno>, desde: LatLng): Alumno? {
+    var masCercano: Alumno? = null
+    var menorDistancia = Double.MAX_VALUE
+
+    for (alumno in alumnos) {
+        if (alumno.estado != EstadoEntrega.ENTREGADO && alumno.lat != null && alumno.lng != null) {
+            val difLat = alumno.lat - desde.latitude
+            val difLng = alumno.lng - desde.longitude
+            val distancia = difLat * difLat + difLng * difLng
+            if (distancia < menorDistancia) {
+                menorDistancia = distancia
+                masCercano = alumno
+            }
+        }
+    }
+
+    return masCercano
 }
 
 @Composable

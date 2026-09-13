@@ -2,16 +2,17 @@ package com.example.myapplication.ui.screens.profile
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.myapplication.core.utils.AppSettings
 import com.example.myapplication.data.local.PreferenciasRepository
+import kotlinx.coroutines.launch
 
 /**
- * ViewModel de apariencia/accesibilidad (SharedPreferences).
+ * ViewModel de apariencia/accesibilidad (DataStore).
  *
- * Usa AndroidViewModel para obtener el Context de la aplicación y construir
- * el repositorio. Cada cambio hace dos cosas:
+ * Cada cambio hace dos cosas:
  *   1) Actualiza AppSettings -> el tema reacciona al instante en toda la app.
- *   2) Persiste en SharedPreferences -> el ajuste se recuerda al reabrir.
+ *   2) Guarda en DataStore (con una corrutina) -> el ajuste se recuerda al reabrir.
  */
 class ConfiguracionViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -19,21 +20,21 @@ class ConfiguracionViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setModoOscuro(valor: Boolean) {
         AppSettings.modoOscuro = valor
-        prefs.guardarModoOscuro(valor)
+        viewModelScope.launch { prefs.guardarModoOscuro(valor) }
     }
 
     fun setEscalaTexto(valor: Float) {
         AppSettings.escalaTexto = valor
-        prefs.guardarEscalaTexto(valor)
+        viewModelScope.launch { prefs.guardarEscalaTexto(valor) }
     }
 
     fun setMantenerPantalla(valor: Boolean) {
         AppSettings.mantenerPantalla = valor
-        prefs.guardarMantenerPantalla(valor)
+        viewModelScope.launch { prefs.guardarMantenerPantalla(valor) }
     }
 
     fun setSilenciarNotificaciones(valor: Boolean) {
         AppSettings.silenciarNotificaciones = valor
-        prefs.guardarSilenciarNotificaciones(valor)
+        viewModelScope.launch { prefs.guardarSilenciarNotificaciones(valor) }
     }
 }

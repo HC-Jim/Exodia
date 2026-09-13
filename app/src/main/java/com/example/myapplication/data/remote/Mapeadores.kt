@@ -50,7 +50,9 @@ fun AlumnoDto.aDominio(): Alumno {
         direccion = direccion ?: "",
         paradero = paradero ?: "",
         horaEntrega = horaEntrega,
-        estado = estadoEnum
+        estado = estadoEnum,
+        lat = lat,
+        lng = lng
     )
 }
 
@@ -101,7 +103,9 @@ fun List<HijoDto>.aHijos(): List<Hijo> {
             paradero = dto.paradero ?: "",
             contactoNombre = dto.contactoNombre ?: "",
             contactoRol = dto.contactoRol ?: "",
-            color = colorPorIndice(i)
+            color = colorPorIndice(i),
+            lat = dto.lat,
+            lng = dto.lng
         )
         lista.add(hijo)
     }
