@@ -1,111 +1,80 @@
-# App de Transporte y Asistencia Escolar — Grupo Exodia
+# App de Transporte y Gestión Escolar — Grupo Exodia
 
-Aplicación móvil nativa Android para la gestión de asistencia y transporte escolar
-en una institución educativa de nivel básico. Este repositorio contiene, por ahora,
-las **interfaces del rol Conductor** construidas con Jetpack Compose.
+Aplicación Android para el transporte escolar de una institución educativa.
+Tiene dos roles:
 
-> Trabajo de Campo N°2 — Desarrollo de Aplicaciones Móviles.
-> El proyecto atiende a tres perfiles de usuario: **Docente**, **Apoderado** y **Conductor**.
+- **Estudiante:** ve comunicados, notas y asistencias, sigue el bus en el mapa,
+  y guarda contactos de emergencia y recordatorios personales.
+- **Conductor:** gestiona la ruta del día, marca a cada estudiante como entregado
+  o cancelado y comparte su ubicación para el seguimiento.
 
----
-
-## Estado actual
-
-- ✅ Interfaces del rol **Conductor** (5 pantallas) con datos de ejemplo.
-- ⏳ Pendiente: lógica de negocio (ViewModels), capa de datos y roles Docente / Apoderado.
-
-> Las pantallas usan datos simulados (`MockConductor`). El mapa y el escáner QR son
-> marcadores visuales; se reemplazarán por **Google Maps SDK** y **CameraX / ML Kit**
-> al conectar la capa de datos.
-
----
-
-## Pantallas del Conductor
-
-| Pantalla | Descripción |
-|---|---|
-| **Inicio** | Saludo, vista previa del mapa y acciones *Iniciar ruta* / *Finaliza Ruta*. |
-| **Configuración / Perfil** | Datos del conductor, movilidad, paradero, contacto y cerrar sesión. |
-| **Escanear QR** | Visor de cámara para registrar el abordaje del alumno. |
-| **Ruta Activa** | Mapa con el bus y los alumnos, próxima entrega y acceso al escáner. |
-| **Alumnos Entregados** | Lista de alumnos entregados con su estado. |
-
-Navegación inferior con cuatro destinos: **Inicio · Seguimiento · Colegio · Perfil**.
-
----
-
-## Stack tecnológico
-
-| Capa | Tecnología |
-|---|---|
-| Lenguaje | Kotlin 2.x |
-| Interfaz | Jetpack Compose + Material Design 3 |
-| Arquitectura (objetivo) | MVVM + Clean Architecture |
-| SDK mínimo / objetivo | API 24 / API 36 |
-
-Tecnologías previstas para las siguientes fases: Coroutines + Flow, Hilt, Room,
-DataStore, Retrofit/OkHttp/Moshi, Firebase (Auth, Firestore, Storage, Cloud Messaging),
-Google Maps SDK y WorkManager.
-
----
+Está desarrollada con Kotlin y Jetpack Compose, siguiendo una arquitectura MVVM.
 
 ## Estructura del proyecto
 
 ```
 app/src/main/java/com/example/myapplication/
-├─ MainActivity.kt
-├─ data/                # Capa de datos
-│  ├─ models/           # DTOs / modelos de datos (API y tablas locales)
-│  ├─ repositories/     # Acceso a datos (hoy con datos de ejemplo)
-│  ├─ local/            # Persistencia local: Room / DataStore
-│  └─ remote/           # API REST y Firebase
-├─ domain/              # Capa de dominio
-│  ├─ entities/         # Objetos de negocio (Alumno, Conductor, Hijo…)
-│  └─ usecases/         # Casos de uso
-├─ ui/                  # Capa de presentación
-│  ├─ screens/
-│  │  ├─ auth/          # Selección de perfil / login
-│  │  ├─ dashboard/     # Pantallas principales + navegación por rol
-│  │  ├─ profile/       # Perfiles y configuración
-│  │  └─ secure/        # Escaneo QR / cámara
-│  ├─ components/       # Widgets reutilizables (avatar, mapa, chips…)
-│  └─ theme/            # Paleta de marca y tema Material 3
-├─ core/                # Utilidades transversales
-│  ├─ utils/            # Formateo, validaciones
-│  ├─ permissions/      # Permisos (cámara, ubicación, almacenamiento)
-│  └─ security/         # Cifrado, biometría, sesión
-└─ services/            # Servicios de plataforma
-   ├─ api/              # Cliente HTTP (Retrofit/OkHttp)
-   ├─ storage/          # Archivos locales / nube
-   └─ camera/           # Cámara y galería
+├── MainActivity.kt        # punto de entrada y navegación entre pantallas
+├── core/                  # utilidades, permisos, sesión y ajustes en memoria
+├── data/                  # capa de datos
+│   ├── local/             # SQLite y DataStore (persistencia local)
+│   ├── models/            # DTOs que representan el JSON de la API
+│   ├── remote/            # conversión de DTO a entidades del dominio
+│   └── repositories/      # repositorios (única puerta a los datos)
+├── domain/
+│   └── entities/          # entidades de negocio (Alumno, Usuario, ...)
+├── services/
+│   └── api/               # cliente Retrofit
+└── ui/
+    ├── components/         # componentes reutilizables
+    ├── screens/            # pantallas (auth, dashboard, profile, secure)
+    └── theme/              # colores y tipografía
 ```
 
-> Arquitectura **MVVM + Clean Architecture**. Las carpetas `data/models`,
-> `data/local`, `data/remote`, `domain/usecases`, `core/*` y `services/*`
-> contienen un archivo *placeholder* que documenta su propósito; se
-> implementarán en las siguientes fases.
+## Arquitectura
 
----
+El flujo de datos es siempre el mismo:
 
-## Cómo ejecutar
+```
+Pantalla (Compose) → ViewModel → Repository → fuente de datos (API o local)
+```
 
-1. Clonar el repositorio y abrirlo en **Android Studio** (última versión estable).
-2. Esperar la sincronización de Gradle (**Sync Project with Gradle Files**).
-3. Ejecutar en un emulador o dispositivo con **API 24 o superior**.
+La pantalla no accede directamente a la base de datos ni a la red: siempre pasa
+por su ViewModel y por un Repository.
 
-Cada pantalla incluye una función `@Preview`, por lo que puede visualizarse
-directamente en el panel *Design* del IDE sin ejecutar la app.
+## Persistencia local
 
----
+- **DataStore:** ajustes de apariencia (modo oscuro, tamaño de letra).
+- **SQLite:** contactos de emergencia, recordatorios personales, caché de la
+  información de la API, cola de cambios sin conexión e historial de entregas.
 
-## Consideraciones de diseño
+## Tecnologías
 
-- Tema claro de alto contraste, pensado para uso en exteriores.
-- Estados indicados por **ícono + texto**, no solo por color (accesibilidad).
-- Áreas táctiles de al menos **48 dp**.
-- Listas con `LazyColumn` y claves estables para un desplazamiento fluido.
+- Kotlin y Jetpack Compose (Material 3)
+- Retrofit + Gson (consumo de la API REST)
+- DataStore y SQLite (persistencia local)
+- Google Maps (seguimiento del bus)
+- SDK mínimo 24 / objetivo 36
 
----
+## Configuración
+
+1. Clonar el repositorio y abrirlo en Android Studio.
+
+2. En `local.properties`, agregar la clave de Google Maps:
+
+   ```
+   MAPS_API_KEY=tu_clave
+   ```
+
+3. En `services/api/RetrofitCliente.kt`, poner la URL del backend
+   (la de Render, o `http://10.0.2.2:3000/` para el backend local en el emulador).
+
+4. Sincronizar Gradle y ejecutar en un emulador o dispositivo con API 24 o superior.
+
+## Backend
+
+La API que consume la app está en un repositorio aparte, hecha con
+Node.js + Express + Supabase.
 
 ## Autores — Grupo Exodia
 
