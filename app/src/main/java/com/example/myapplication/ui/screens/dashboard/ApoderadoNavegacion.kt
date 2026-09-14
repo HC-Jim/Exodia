@@ -5,6 +5,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -21,7 +22,8 @@ enum class TabApoderado(val etiqueta: String, val icono: ImageVector) {
     INICIO("Inicio", Icons.Filled.Home),
     SEGUIMIENTO("Seguimiento", Icons.Filled.LocationOn),
     COLEGIO("Colegio", Icons.Filled.School),
-    PERFIL("Perfil", Icons.Filled.Person)
+    PERFIL("Perfil", Icons.Filled.Person),
+    AJUSTES("Ajustes", Icons.Filled.Settings)
 }
 
 /** Pantallas que se abren por encima de una pestaña. */

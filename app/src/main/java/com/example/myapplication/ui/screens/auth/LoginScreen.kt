@@ -34,7 +34,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.components.EscudoColegio
+import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.AccentBlue
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.SanAgustinRed
@@ -43,7 +45,10 @@ import com.example.myapplication.ui.theme.TextSecondary
 @Composable
 fun LoginScreen(
     onIniciar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRegistrar: () -> Unit = {},
+    onOlvide: () -> Unit = {},
+    viewModel: AuthViewModel = viewModel()
 ) {
     var usuario by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
@@ -92,25 +97,32 @@ fun LoginScreen(
         )
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            TextButton(onClick = {}) { Text("¿Olvidaste tu contraseña?", fontSize = 12.sp, color = TextSecondary) }
+            TextButton(onClick = onOlvide) { Text("¿Olvidaste tu contraseña?", fontSize = 12.sp, color = TextSecondary) }
+        }
+
+        // Mensaje de error (credenciales inválidas, etc.)
+        if (viewModel.error != null) {
+            Text(viewModel.error!!, color = DangerRed, fontSize = 13.sp)
+            Spacer(Modifier.height(6.dp))
         }
         Spacer(Modifier.height(8.dp))
 
         Button(
-            onClick = onIniciar,
+            onClick = { viewModel.login(usuario, clave) { onIniciar() } },
+            enabled = !viewModel.cargando,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
         ) {
-            Text("Iniciar", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+            Text(if (viewModel.cargando) "Ingresando…" else "Iniciar", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
         }
 
         Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("¿No tienes cuenta? ", color = TextSecondary, fontSize = 13.sp)
-            TextButton(onClick = {}, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
+            TextButton(onClick = onRegistrar, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
                 Text("Regístrate", color = AccentBlue, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             }
         }

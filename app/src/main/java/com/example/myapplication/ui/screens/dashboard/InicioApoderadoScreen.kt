@@ -35,8 +35,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.core.utils.Sesion
 import com.example.myapplication.domain.entities.Hijo
-import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.components.ChipsHijos
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.components.MenuDesplegable
@@ -55,10 +55,11 @@ fun InicioApoderadoScreen(
     onHijoClick: (Hijo) -> Unit,
     modifier: Modifier = Modifier,
     onNotas: () -> Unit = {},
-    onEventos: () -> Unit = {},
-    // El ViewModel trae la lista de hijos desde la API.
-    viewModel: HijosViewModel = viewModel()
+    onEventos: () -> Unit = {}
 ) {
+    // Un solo estudiante por usuario: se toma de la sesión.
+    val usuario = Sesion.usuario
+
     val opcionesMenu = listOf(
         OpcionMenu("Movilidad", Icons.Filled.DirectionsBus, onMovilidad),
         OpcionMenu("Colegio", Icons.Filled.School, onColegio),
@@ -81,12 +82,12 @@ fun InicioApoderadoScreen(
         ) {
             MenuDesplegable(opciones = opcionesMenu)
             Spacer(Modifier.size(4.dp))
-            InicialesAvatar(nombre = MockApoderado.nombrePadre, tamano = 46.dp)
+            InicialesAvatar(nombre = usuario?.nombre ?: "Estudiante", tamano = 46.dp)
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
                 Text("¡Hola!", color = TextSecondary, fontSize = 13.sp)
                 Text(
-                    MockApoderado.nombrePadre,
+                    usuario?.nombre ?: "Estudiante",
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -103,7 +104,27 @@ fun InicioApoderadoScreen(
             }
         }
 
-        ChipsHijos(hijos = viewModel.hijos, onHijoClick = onHijoClick)
+        // Tarjeta del estudiante único del usuario.
+        if (usuario?.estudianteNombre != null) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(IndigoPrimary)
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                InicialesAvatar(nombre = usuario.estudianteNombre, tamano = 40.dp)
+                Spacer(Modifier.size(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(usuario.estudianteNombre, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    if (usuario.estudianteGrado != null) {
+                        Text(usuario.estudianteGrado, color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
+                    }
+                }
+            }
+        }
         Spacer(Modifier.height(20.dp))
 
         // Menú principal

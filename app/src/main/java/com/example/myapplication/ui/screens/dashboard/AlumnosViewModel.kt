@@ -7,9 +7,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.repositories.DatosRepository
+import com.example.myapplication.data.repositories.RutaRepository
 import com.example.myapplication.domain.entities.Alumno
 import com.example.myapplication.domain.entities.EstadoEntrega
 import com.example.myapplication.domain.entities.RegistroHistorial
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.launch
 
 /**
@@ -24,6 +26,11 @@ import kotlinx.coroutines.launch
 class AlumnosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DatosRepository(app)
+    private val rutaRepo = RutaRepository()
+
+    // Puntos de la ruta por calles (conductor -> próximo estudiante).
+    var ruta by mutableStateOf<List<LatLng>>(emptyList())
+        private set
 
     var alumnos by mutableStateOf<List<Alumno>>(emptyList())
         private set
@@ -82,6 +89,13 @@ class AlumnosViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun limpiarMensaje() { mensaje = null }
+
+    /** Calcula la ruta por calles del conductor hacia el destino. */
+    fun calcularRuta(origen: LatLng, destino: LatLng) {
+        viewModelScope.launch {
+            ruta = rutaRepo.obtenerRuta(origen, destino)
+        }
+    }
 
     // Alumnos ya entregados (para la pantalla de listado).
     val entregados: List<Alumno>

@@ -20,6 +20,7 @@ import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.screens.dashboard.RutaApoderado
 import com.example.myapplication.ui.screens.dashboard.TabApoderado
 import com.example.myapplication.ui.screens.dashboard.rememberNavegadorApoderado
+import com.example.myapplication.ui.screens.profile.AjustesScreen
 import com.example.myapplication.ui.screens.profile.ConfiguracionApoderadoScreen
 import com.example.myapplication.ui.screens.profile.PerfilAlumnoScreen
 import com.example.myapplication.ui.theme.IndigoPrimary
@@ -80,6 +81,8 @@ fun ApoderadoApp(
                     )
 
                     TabApoderado.PERFIL -> ConfiguracionApoderadoScreen()
+
+                    TabApoderado.AJUSTES -> AjustesScreen(onCerrarSesion = onCerrarSesion)
                 }
             }
         }

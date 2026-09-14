@@ -57,23 +57,16 @@ import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.myapplication.domain.entities.Hijo
+import com.example.myapplication.core.utils.Sesion
 
 @Composable
 fun SeguimientoApoderadoScreen(
     modifier: Modifier = Modifier,
-    viewModel: UbicacionViewModel = viewModel(),
-    hijosVM: HijosViewModel = viewModel()
+    viewModel: UbicacionViewModel = viewModel()
 ) {
-    // Hijo seleccionado (por defecto, el primero de la lista de hijos).
-    var hijoSeleccionado by remember { mutableStateOf<Hijo?>(null) }
-    LaunchedEffect(hijosVM.hijos) {
-        if (hijoSeleccionado == null && hijosVM.hijos.isNotEmpty()) {
-            hijoSeleccionado = hijosVM.hijos[0]
-        }
-    }
-
-    val hijo = hijoSeleccionado                     // copia local (más fácil de usar)
-    val movilidad = hijo?.movilidad ?: ""           // bus del estudiante seleccionado
+    // Un solo estudiante por usuario: se toma de la sesión iniciada.
+    val usuario = Sesion.usuario
+    val movilidad = usuario?.movilidad ?: ""        // bus del estudiante del usuario
 
     // Pregunta al servidor la posición del bus cada 4 segundos.
     LaunchedEffect(movilidad) {
@@ -97,37 +90,37 @@ fun SeguimientoApoderadoScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            InicialesAvatar(nombre = MockApoderado.nombrePadre, tamano = 42.dp)
+            InicialesAvatar(nombre = usuario?.nombre ?: "Estudiante", tamano = 42.dp)
             Spacer(Modifier.size(12.dp))
             Column {
                 Text("¡Hola!", color = TextSecondary, fontSize = 12.sp)
-                Text(MockApoderado.nombrePadre, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(usuario?.nombre ?: "Estudiante", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
 
-        // Chips de hijos: al tocar uno, se sigue a ese estudiante.
-        ChipsHijos(
-            hijos = hijosVM.hijos,
-            onHijoClick = { seleccionado -> hijoSeleccionado = seleccionado }
-        )
-        if (hijo != null) {
+        // Estudiante único del usuario.
+        if (usuario?.estudianteNombre != null) {
             Text(
-                "Siguiendo a: ${hijo.nombre}",
+                "Estudiante: ${usuario.estudianteNombre}",
                 modifier = Modifier.padding(start = 20.dp, top = 4.dp),
                 color = TextSecondary,
-                fontSize = 12.sp
+                fontSize = 13.sp
             )
         }
         Spacer(Modifier.size(12.dp))
 
-        // Mapa: punto del estudiante + bus + línea entre ambos.
+        // Mapa: punto del estudiante + colegio + bus + línea.
         val ubic = viewModel.ubicacion
-        val puntoEstudiante = puntoDeHijo(hijo)
-        val centroInicial = puntoEstudiante ?: LatLng(-12.020556, -76.957333)
-        val camara = rememberCameraPositionState {
-            position = CameraPosition.fromLatLngZoom(centroInicial, 15f)
+        val puntoEstudiante = if (usuario?.lat != null && usuario.lng != null) {
+            LatLng(usuario.lat, usuario.lng)
+        } else {
+            null
         }
-        // Centra la cámara en el punto del estudiante cuando cambias de hijo.
+        val colegio = LatLng(-12.018000, -76.954000)   // punto fijo del colegio
+        val centroInicial = puntoEstudiante ?: colegio
+        val camara = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(centroInicial, 14f)
+        }
         LaunchedEffect(puntoEstudiante) {
             if (puntoEstudiante != null) {
                 camara.position = CameraPosition.fromLatLngZoom(puntoEstudiante, 15f)
@@ -137,7 +130,7 @@ fun SeguimientoApoderadoScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(220.dp)
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(20.dp))
         ) {
@@ -145,16 +138,21 @@ fun SeguimientoApoderadoScreen(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = camara
             ) {
-                // Punto de recogida del estudiante (verde)
+                // Punto del estudiante (verde)
                 if (puntoEstudiante != null) {
                     Marker(
                         state = MarkerState(position = puntoEstudiante),
-                        title = hijo?.nombre ?: "Estudiante",
-                        snippet = hijo?.paradero,
+                        title = usuario?.estudianteNombre ?: "Estudiante",
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
                     )
                 }
-                // Bus (naranja)
+                // Colegio (violeta, fijo por defecto)
+                Marker(
+                    state = MarkerState(position = colegio),
+                    title = "Colegio",
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
+                )
+                // Bus / conductor (naranja)
                 if (ubic != null) {
                     Marker(
                         state = MarkerState(position = LatLng(ubic.lat, ubic.lng)),

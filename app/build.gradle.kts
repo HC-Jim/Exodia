@@ -32,6 +32,8 @@ android {
 
         // Disponible en el Manifest como ${MAPS_API_KEY}
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        // Disponible en el código como BuildConfig.MAPS_API_KEY (para la Directions API)
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -49,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -76,6 +79,8 @@ dependencies {
     implementation(libs.play.services.location)
     // --- DataStore (preferencias de ajustes) ---
     implementation(libs.androidx.datastore.preferences)
+    // --- Utilidades de mapas (decodificar la ruta de Directions) ---
+    implementation(libs.maps.utils)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

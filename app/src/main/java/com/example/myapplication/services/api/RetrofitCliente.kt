@@ -4,6 +4,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 /**
  * Crea UNA sola instancia de Retrofit para toda la app (patrón singleton simple).
@@ -25,8 +26,13 @@ object RetrofitCliente {
         return interceptor
     }
 
+    // Tiempos de espera amplios: Render (plan gratis) puede tardar ~30-50 s
+    // en "despertar" en la primera petición (cold start).
     private val cliente = OkHttpClient.Builder()
         .addInterceptor(logger)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
     val api: ApiService = Retrofit.Builder()

@@ -52,9 +52,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entities.Alumno
 import com.example.myapplication.domain.entities.EstadoEntrega
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -122,12 +124,25 @@ fun RutaActivaScreen(
             }
         }
     }
-    // Cámara del mapa: arranca centrada en el punto de referencia.
+    // Punto fijo del colegio (destino por defecto).
+    val colegio = LatLng(-12.018000, -76.954000)
+
+    // Cámara del mapa: arranca centrada en la zona de los paraderos.
     val camara = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(puntoReferencia, 15f)
+        position = CameraPosition.fromLatLngZoom(puntoReferencia, 14f)
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    // Cuando cambia la posición del conductor o el próximo estudiante, recalcula la ruta por calles.
+    LaunchedEffect(posConductor, proxima?.id) {
+        if (proxima != null && proxima.lat != null && proxima.lng != null) {
+            viewModel.calcularRuta(posConductor, LatLng(proxima.lat, proxima.lng))
+        }
+    }
+
+    Column(modifier = modifier.fillMaxSize()) {
+
+      // El mapa ocupa el espacio disponible; la tarjeta va debajo.
+      Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = camara
@@ -162,10 +177,17 @@ fun RutaActivaScreen(
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
             )
 
-            // 3) Línea del conductor hacia el próximo estudiante a recoger.
-            if (proxima != null && proxima.lat != null && proxima.lng != null) {
+            // 3) El punto del colegio (violeta, fijo por defecto).
+            Marker(
+                state = MarkerState(position = colegio),
+                title = "Colegio",
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
+            )
+
+            // 4) Ruta por las CALLES del conductor hacia el próximo estudiante.
+            if (viewModel.ruta.size >= 2) {
                 Polyline(
-                    points = listOf(posConductor, LatLng(proxima.lat, proxima.lng)),
+                    points = viewModel.ruta,
                     color = IndigoPrimary,
                     width = 8f
                 )
@@ -208,28 +230,28 @@ fun RutaActivaScreen(
             }
         }
 
-        // Botón de recentrar
+        // Botón de recentrar (dentro del mapa, sobre el conductor)
         Surface(
             onClick = { camara.position = CameraPosition.fromLatLngZoom(posConductor, 15f) },
             shape = CircleShape,
             color = Color.White,
             shadowElevation = 4.dp,
             modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 16.dp, bottom = 180.dp)
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
                 .size(48.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(Icons.Filled.MyLocation, contentDescription = "Centrar mapa", tint = IndigoPrimary)
             }
         }
+      } // cierra el Box del mapa
 
-        // Tarjeta de próxima entrega
+        // Tarjeta de próxima entrega (DEBAJO del mapa, para no taparlo)
         Card(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)

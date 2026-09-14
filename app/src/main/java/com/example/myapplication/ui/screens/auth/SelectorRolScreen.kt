@@ -31,13 +31,10 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
-/** Rol de usuario elegido en la pantalla de entrada. */
-enum class Rol { NINGUNO, CONDUCTOR, APODERADO }
 
-/**
- * Pantalla de selección de perfil. Sustituye temporalmente al login/registro
- * mientras no exista autenticación (Firebase Authentication, sección 6.2).
- */
+enum class Rol { NINGUNO, CONDUCTOR, ESTUDIANTE }
+
+
 @Composable
 fun SelectorRolScreen(onRol: (Rol) -> Unit, modifier: Modifier = Modifier) {
     Column(
@@ -53,7 +50,7 @@ fun SelectorRolScreen(onRol: (Rol) -> Unit, modifier: Modifier = Modifier) {
         Spacer(Modifier.height(32.dp))
         TarjetaRol("Conductor", Icons.Filled.DirectionsBus) { onRol(Rol.CONDUCTOR) }
         Spacer(Modifier.height(16.dp))
-        TarjetaRol("Apoderado", Icons.Filled.FamilyRestroom) { onRol(Rol.APODERADO) }
+        TarjetaRol("Estudiante", Icons.Filled.FamilyRestroom) { onRol(Rol.ESTUDIANTE) }
     }
 }
 

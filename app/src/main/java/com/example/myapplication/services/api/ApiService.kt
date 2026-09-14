@@ -3,8 +3,13 @@ package com.example.myapplication.services.api
 import com.example.myapplication.data.models.AlumnoDto
 import com.example.myapplication.data.models.ComunicadoDto
 import com.example.myapplication.data.models.HijoDto
+import com.example.myapplication.data.models.LoginBody
+import com.example.myapplication.data.models.MensajeRespuesta
 import com.example.myapplication.data.models.NotaDto
+import com.example.myapplication.data.models.PreguntaRespuesta
+import com.example.myapplication.data.models.RestablecerBody
 import com.example.myapplication.data.models.UbicacionDto
+import com.example.myapplication.data.models.UsuarioDto
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -75,6 +80,19 @@ interface ApiService {
 
     @DELETE("hijos/{id}")
     suspend fun borrarHijo(@Path("id") id: Long)
+
+    // ---------- USUARIOS (autenticación) ----------
+    @POST("usuarios/registrar")
+    suspend fun registrar(@Body usuario: UsuarioDto): UsuarioDto
+
+    @POST("usuarios/login")
+    suspend fun login(@Body body: LoginBody): UsuarioDto
+
+    @GET("usuarios/pregunta/{correo}")
+    suspend fun getPregunta(@Path("correo") correo: String): PreguntaRespuesta
+
+    @POST("usuarios/restablecer")
+    suspend fun restablecer(@Body body: RestablecerBody): MensajeRespuesta
 
     // ---------- UBICACIONES (seguimiento del bus) ----------
     // El apoderado lee la posición del bus.
