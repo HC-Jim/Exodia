@@ -45,15 +45,23 @@ por su ViewModel y por un Repository.
 ## Persistencia local
 
 - **DataStore:** ajustes de apariencia (modo oscuro, tamaño de letra).
-- **SQLite:** contactos de emergencia, recordatorios personales, caché de la
-  información de la API, cola de cambios sin conexión e historial de entregas.
+- **SQLite:** solo contactos de emergencia y recordatorios personales.
+  Los datos del negocio (usuarios, asistencias, ubicación del bus, comunicados,
+  notas) viven en el backend; la app los lee directo de la API sin caché local.
+
+## Seguimiento del bus y ubicación
+
+- La app usa Google Maps para mostrar los puntos fijos de los estudiantes y el
+  punto actual del conductor (GPS). No dibuja la ruta ni usa la Directions API.
+- Al registrarse, el estudiante fija su punto de recojo con el GPS del teléfono.
+- El conductor marca a cada estudiante como entregado desde su pantalla de ruta.
 
 ## Tecnologías
 
 - Kotlin y Jetpack Compose (Material 3)
 - Retrofit + Gson (consumo de la API REST)
 - DataStore y SQLite (persistencia local)
-- Google Maps (seguimiento del bus)
+- Google Maps + Fused Location (seguimiento del bus y GPS)
 - SDK mínimo 24 / objetivo 36
 
 ## Configuración

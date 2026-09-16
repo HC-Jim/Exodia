@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -245,15 +245,17 @@ fun RutaActivaScreen(
 
                     // Acciones principales: entregar o cancelar (con motivo).
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Por ahora "Escanear QR" solo marca al estudiante como entregado.
+                        // Más adelante abrirá la cámara para leer el QR real del estudiante.
                         Button(
                             onClick = { viewModel.marcarEntregado(proxima) },
                             modifier = Modifier.weight(1f).height(44.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
                         ) {
-                            Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.size(6.dp))
-                            Text("Entregar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Escanear QR", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
                         Button(
                             onClick = { mostrarCancelar = true },
@@ -269,9 +271,6 @@ fun RutaActivaScreen(
                         androidx.compose.material3.OutlinedButton(
                             onClick = onVerLista, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
                         ) { Text("Listado", fontSize = 12.sp) }
-                        androidx.compose.material3.OutlinedButton(
-                            onClick = { viewModel.marcarEntregado(proxima) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
-                        ) { Text("Escanear QR", fontSize = 12.sp) }
                         androidx.compose.material3.OutlinedButton(
                             onClick = onContactar, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
                         ) { Text("Contactar", fontSize = 12.sp) }

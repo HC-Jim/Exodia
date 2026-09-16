@@ -11,7 +11,6 @@ import com.example.myapplication.data.models.RestablecerBody
 import com.example.myapplication.data.models.UbicacionDto
 import com.example.myapplication.data.models.UsuarioDto
 import retrofit2.http.Body
-import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -27,30 +26,9 @@ interface ApiService {
     @GET("comunicados")
     suspend fun getComunicados(): List<ComunicadoDto>
 
-    @GET("comunicados/{id}")
-    suspend fun getComunicado(@Path("id") id: Long): ComunicadoDto
-
-    @POST("comunicados")
-    suspend fun crearComunicado(@Body comunicado: ComunicadoDto): ComunicadoDto
-
-    @PUT("comunicados/{id}")
-    suspend fun actualizarComunicado(@Path("id") id: Long, @Body comunicado: ComunicadoDto): ComunicadoDto
-
-    @DELETE("comunicados/{id}")
-    suspend fun borrarComunicado(@Path("id") id: Long)
-
     // ---------- NOTAS ----------
     @GET("notas")
     suspend fun getNotas(): List<NotaDto>
-
-    @POST("notas")
-    suspend fun crearNota(@Body nota: NotaDto): NotaDto
-
-    @PUT("notas/{id}")
-    suspend fun actualizarNota(@Path("id") id: Long, @Body nota: NotaDto): NotaDto
-
-    @DELETE("notas/{id}")
-    suspend fun borrarNota(@Path("id") id: Long)
 
     // ---------- USUARIOS (autenticación) ----------
     @POST("usuarios/registrar")
