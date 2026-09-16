@@ -26,6 +26,17 @@ class UbicacionViewModel(app: Application) : AndroidViewModel(app) {
     var ubicacion by mutableStateOf<Ubicacion?>(null)
         private set
 
+    // Estado de recojo del estudiante que inició sesión.
+    var miEstado by mutableStateOf<String?>(null)
+        private set
+
+    /** Consulta el estado de recojo del estudiante. */
+    fun cargarMiEstado(usuarioId: Long) {
+        viewModelScope.launch {
+            miEstado = repo.obtenerEstadoEstudiante(usuarioId)
+        }
+    }
+
     /** Lee la última posición del bus de esa movilidad. */
     fun refrescar(movilidad: String) {
         viewModelScope.launch {

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Grade
 import androidx.compose.material.icons.filled.School
@@ -34,10 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.core.utils.Sesion
-import com.example.myapplication.domain.entities.Hijo
-import com.example.myapplication.ui.components.ChipsHijos
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.components.MenuDesplegable
 import com.example.myapplication.ui.components.OpcionMenu
@@ -52,16 +50,15 @@ fun InicioApoderadoScreen(
     onColegio: () -> Unit,
     onCalendario: () -> Unit,
     onAsistencias: () -> Unit,
-    onHijoClick: (Hijo) -> Unit,
     modifier: Modifier = Modifier,
     onNotas: () -> Unit = {},
-    onEventos: () -> Unit = {}
+    onEventos: () -> Unit = {},
+    onRecordatorios: () -> Unit = {}
 ) {
     // Un solo estudiante por usuario: se toma de la sesión.
     val usuario = Sesion.usuario
 
     val opcionesMenu = listOf(
-        OpcionMenu("Movilidad", Icons.Filled.DirectionsBus, onMovilidad),
         OpcionMenu("Colegio", Icons.Filled.School, onColegio),
         OpcionMenu("Calendario", Icons.Filled.CalendarMonth, onCalendario),
         OpcionMenu("Asistencias", Icons.Filled.FactCheck, onAsistencias),
@@ -82,12 +79,12 @@ fun InicioApoderadoScreen(
         ) {
             MenuDesplegable(opciones = opcionesMenu)
             Spacer(Modifier.size(4.dp))
-            InicialesAvatar(nombre = usuario?.nombre ?: "Estudiante", tamano = 46.dp)
+            InicialesAvatar(nombre = usuario?.estudianteNombre ?: "Estudiante", tamano = 46.dp)
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
                 Text("¡Hola!", color = TextSecondary, fontSize = 13.sp)
                 Text(
-                    usuario?.nombre ?: "Estudiante",
+                    usuario?.estudianteNombre ?: "Estudiante",
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
@@ -132,10 +129,9 @@ fun InicioApoderadoScreen(
             modifier = Modifier.padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            BotonMenu("Movilidad", Icons.Filled.DirectionsBus, onMovilidad)
             BotonMenu("Colegio", Icons.Filled.School, onColegio)
-            BotonMenu("Calendario", Icons.Filled.CalendarMonth, onCalendario)
             BotonMenu("Asistencias", Icons.Filled.FactCheck, onAsistencias)
+            BotonMenu("Recordatorios", Icons.Filled.EditNote, onRecordatorios)
         }
     }
 }
@@ -175,6 +171,6 @@ private fun BotonMenu(texto: String, icono: ImageVector, onClick: () -> Unit) {
 @Composable
 private fun InicioApoderadoPreview() {
     MyApplicationTheme {
-        InicioApoderadoScreen({}, {}, {}, {}, {})
+        InicioApoderadoScreen({}, {}, {}, {})
     }
 }

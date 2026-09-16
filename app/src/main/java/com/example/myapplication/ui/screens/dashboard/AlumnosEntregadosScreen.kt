@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entities.Alumno
-import com.example.myapplication.domain.entities.RegistroHistorial
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.components.InicialesAvatar
@@ -80,14 +79,6 @@ fun AlumnosEntregadosScreen(
         }
         Spacer(Modifier.size(8.dp))
 
-        // Cola offline: cuántos cambios faltan enviar + botón para sincronizar.
-        BannerSincronizar(
-            pendientes = viewModel.pendientes,
-            mensaje = viewModel.mensaje,
-            onSincronizar = { viewModel.sincronizar() }
-        )
-        Spacer(Modifier.size(8.dp))
-
         // LazyColumn con claves estables (sección 6.5 — rendimiento del documento)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -99,79 +90,7 @@ fun AlumnosEntregadosScreen(
             items(entregados, key = { it.id }) { alumno ->
                 FilaAlumnoEntregado(alumno)
             }
-
-            // Historial local de entregas (guardado en SQLite).
-            if (viewModel.historial.isNotEmpty()) {
-                item {
-                    Row(
-                        modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Filled.History, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.size(6.dp))
-                        Text("Historial de entregas", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextPrimary)
-                    }
-                }
-                items(viewModel.historial, key = { "h" + it.id }) { registro ->
-                    FilaHistorial(registro)
-                }
-            }
         }
-    }
-}
-
-@Composable
-private fun BannerSincronizar(pendientes: Int, mensaje: String?, onSincronizar: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(
-                if (pendientes > 0) WarningAmber.copy(alpha = 0.15f)
-                else MaterialTheme.colorScheme.surface
-            )
-            .padding(horizontal = 14.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Filled.Sync, contentDescription = null, tint = IndigoPrimary, modifier = Modifier.size(20.dp))
-        Spacer(Modifier.size(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text(
-                if (pendientes > 0) "$pendientes cambio(s) sin enviar" else "Todo sincronizado",
-                color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium
-            )
-            if (mensaje != null) {
-                Text(mensaje, color = TextSecondary, fontSize = 12.sp)
-            }
-        }
-        Button(
-            onClick = onSincronizar,
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary)
-        ) {
-            Text("Sincronizar", fontSize = 13.sp)
-        }
-    }
-}
-
-@Composable
-private fun FilaHistorial(registro: RegistroHistorial) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(20.dp))
-        Spacer(Modifier.size(10.dp))
-        Column(Modifier.weight(1f)) {
-            Text(registro.alumnoNombre, color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-            Text(registro.fecha, color = TextSecondary, fontSize = 12.sp)
-        }
-        Text(registro.estado, color = SuccessGreen, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

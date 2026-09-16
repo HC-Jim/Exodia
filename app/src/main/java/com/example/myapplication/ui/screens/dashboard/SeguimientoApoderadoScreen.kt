@@ -36,13 +36,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.repositories.MockApoderado
-import com.example.myapplication.domain.entities.PasoRuta
-import com.example.myapplication.ui.components.ChipsHijos
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.components.MapaSimulado
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
@@ -53,10 +51,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.example.myapplication.domain.entities.Hijo
 import com.example.myapplication.core.utils.Sesion
 
 @Composable
@@ -68,11 +64,16 @@ fun SeguimientoApoderadoScreen(
     val usuario = Sesion.usuario
     val movilidad = usuario?.movilidad ?: ""        // bus del estudiante del usuario
 
-    // Pregunta al servidor la posición del bus cada 4 segundos.
+    val usuarioId = usuario?.id
+
+    // Pregunta la posición del bus y el estado del estudiante cada 4 s.
     LaunchedEffect(movilidad) {
         while (true) {
             if (movilidad.isNotBlank()) {
                 viewModel.refrescar(movilidad)
+            }
+            if (usuarioId != null) {
+                viewModel.cargarMiEstado(usuarioId)
             }
             kotlinx.coroutines.delay(4000)
         }
@@ -90,34 +91,23 @@ fun SeguimientoApoderadoScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            InicialesAvatar(nombre = usuario?.nombre ?: "Estudiante", tamano = 42.dp)
+            InicialesAvatar(nombre = usuario?.estudianteNombre ?: "Estudiante", tamano = 42.dp)
             Spacer(Modifier.size(12.dp))
             Column {
                 Text("¡Hola!", color = TextSecondary, fontSize = 12.sp)
-                Text(usuario?.nombre ?: "Estudiante", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(usuario?.estudianteNombre ?: "Estudiante", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
-        }
-
-        // Estudiante único del usuario.
-        if (usuario?.estudianteNombre != null) {
-            Text(
-                "Estudiante: ${usuario.estudianteNombre}",
-                modifier = Modifier.padding(start = 20.dp, top = 4.dp),
-                color = TextSecondary,
-                fontSize = 13.sp
-            )
         }
         Spacer(Modifier.size(12.dp))
 
-        // Mapa: punto del estudiante + colegio + bus + línea.
+        // Mapa: punto del estudiante + punto del bus (conductor).
         val ubic = viewModel.ubicacion
         val puntoEstudiante = if (usuario?.lat != null && usuario.lng != null) {
             LatLng(usuario.lat, usuario.lng)
         } else {
             null
         }
-        val colegio = LatLng(-12.018000, -76.954000)   // punto fijo del colegio
-        val centroInicial = puntoEstudiante ?: colegio
+        val centroInicial = puntoEstudiante ?: LatLng(-12.020556, -76.957333)
         val camara = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(centroInicial, 14f)
         }
@@ -138,34 +128,20 @@ fun SeguimientoApoderadoScreen(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = camara
             ) {
-                // Punto del estudiante (verde)
-                if (puntoEstudiante != null) {
+                // Punto del estudiante (verde). Se oculta cuando ya fue recogido.
+                if (puntoEstudiante != null && viewModel.miEstado != "ENTREGADO") {
                     Marker(
                         state = MarkerState(position = puntoEstudiante),
                         title = usuario?.estudianteNombre ?: "Estudiante",
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)
                     )
                 }
-                // Colegio (violeta, fijo por defecto)
-                Marker(
-                    state = MarkerState(position = colegio),
-                    title = "Colegio",
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
-                )
-                // Bus / conductor (naranja)
+                // Punto del bus / conductor (naranja)
                 if (ubic != null) {
                     Marker(
                         state = MarkerState(position = LatLng(ubic.lat, ubic.lng)),
                         title = "Bus ${ubic.movilidad}",
                         icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-                    )
-                }
-                // Línea del bus hacia el estudiante
-                if (ubic != null && puntoEstudiante != null) {
-                    Polyline(
-                        points = listOf(LatLng(ubic.lat, ubic.lng), puntoEstudiante),
-                        color = IndigoPrimary,
-                        width = 8f
                     )
                 }
             }
@@ -184,66 +160,32 @@ fun SeguimientoApoderadoScreen(
             Column(Modifier.padding(18.dp)) {
                 Text("Estado del recorrido", fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 16.sp)
                 Spacer(Modifier.size(12.dp))
-                for (index in MockApoderado.pasosRuta.indices) {
-                    val paso = MockApoderado.pasosRuta[index]
-                    PasoLinea(paso, esUltimo = index == MockApoderado.pasosRuta.lastIndex)
-                }
-            }
-        }
-    }
-}
 
-/** Convierte las coordenadas del hijo en un punto del mapa (null si no tiene). */
-private fun puntoDeHijo(hijo: Hijo?): LatLng? {
-    if (hijo != null && hijo.lat != null && hijo.lng != null) {
-        return LatLng(hijo.lat, hijo.lng)
-    }
-    return null
-}
-
-@Composable
-private fun PasoLinea(paso: PasoRuta, esUltimo: Boolean) {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        // Indicador + línea vertical
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
-                modifier = Modifier
-                    .size(26.dp)
-                    .clip(CircleShape)
-                    .background(if (paso.completado) SuccessGreen else IndigoPrimary.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) {
-                if (paso.completado) {
-                    Icon(Icons.Filled.Check, contentDescription = "Completado", tint = Color.White, modifier = Modifier.size(16.dp))
+                val estado = viewModel.miEstado
+                val textoEstado: String
+                val colorEstado: Color
+                if (estado == "ENTREGADO") {
+                    textoEstado = "Recogido"
+                    colorEstado = SuccessGreen
+                } else if (estado == "CANCELADO") {
+                    textoEstado = "Recojo cancelado"
+                    colorEstado = DangerRed
                 } else {
+                    textoEstado = "Aún no recogido"
+                    colorEstado = WarningAmber
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(10.dp)
+                            .size(14.dp)
                             .clip(CircleShape)
-                            .background(IndigoPrimary)
+                            .background(colorEstado)
                     )
+                    Spacer(Modifier.size(10.dp))
+                    Text(textoEstado, color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                 }
             }
-            if (!esUltimo) {
-                Box(
-                    modifier = Modifier
-                        .width(2.dp)
-                        .height(28.dp)
-                        .background(if (paso.completado) SuccessGreen else Color(0xFFE0E3EC))
-                )
-            }
-        }
-        Spacer(Modifier.size(14.dp))
-        Column(
-            Modifier
-                .weight(1f)
-                .padding(bottom = if (esUltimo) 0.dp else 6.dp)
-        ) {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(paso.titulo, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 15.sp, modifier = Modifier.weight(1f))
-                Text(paso.hora, color = TextSecondary, fontSize = 13.sp)
-            }
-            Text(paso.detalle, color = TextSecondary, fontSize = 13.sp)
         }
     }
 }

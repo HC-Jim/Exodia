@@ -9,7 +9,8 @@ package com.example.myapplication.domain.entities
 enum class EstadoEntrega {
     PENDIENTE,
     ABORDO,
-    ENTREGADO
+    ENTREGADO,
+    CANCELADO
 }
 
 data class Alumno(

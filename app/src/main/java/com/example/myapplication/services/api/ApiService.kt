@@ -1,8 +1,8 @@
 package com.example.myapplication.services.api
 
-import com.example.myapplication.data.models.AlumnoDto
 import com.example.myapplication.data.models.ComunicadoDto
-import com.example.myapplication.data.models.HijoDto
+import com.example.myapplication.data.models.AsistenciaDto
+import com.example.myapplication.data.models.EstadoBody
 import com.example.myapplication.data.models.LoginBody
 import com.example.myapplication.data.models.MensajeRespuesta
 import com.example.myapplication.data.models.NotaDto
@@ -22,22 +22,6 @@ import retrofit2.http.Path
  * Cada función es una llamada HTTP; "suspend" permite usarla con corrutinas.
  */
 interface ApiService {
-
-    // ---------- ALUMNOS ----------
-    @GET("alumnos")
-    suspend fun getAlumnos(): List<AlumnoDto>
-
-    @GET("alumnos/{id}")
-    suspend fun getAlumno(@Path("id") id: Long): AlumnoDto
-
-    @POST("alumnos")
-    suspend fun crearAlumno(@Body alumno: AlumnoDto): AlumnoDto
-
-    @PUT("alumnos/{id}")
-    suspend fun actualizarAlumno(@Path("id") id: Long, @Body alumno: AlumnoDto): AlumnoDto
-
-    @DELETE("alumnos/{id}")
-    suspend fun borrarAlumno(@Path("id") id: Long)
 
     // ---------- COMUNICADOS ----------
     @GET("comunicados")
@@ -68,19 +52,6 @@ interface ApiService {
     @DELETE("notas/{id}")
     suspend fun borrarNota(@Path("id") id: Long)
 
-    // ---------- HIJOS ----------
-    @GET("hijos")
-    suspend fun getHijos(): List<HijoDto>
-
-    @POST("hijos")
-    suspend fun crearHijo(@Body hijo: HijoDto): HijoDto
-
-    @PUT("hijos/{id}")
-    suspend fun actualizarHijo(@Path("id") id: Long, @Body hijo: HijoDto): HijoDto
-
-    @DELETE("hijos/{id}")
-    suspend fun borrarHijo(@Path("id") id: Long)
-
     // ---------- USUARIOS (autenticación) ----------
     @POST("usuarios/registrar")
     suspend fun registrar(@Body usuario: UsuarioDto): UsuarioDto
@@ -93,6 +64,20 @@ interface ApiService {
 
     @POST("usuarios/restablecer")
     suspend fun restablecer(@Body body: RestablecerBody): MensajeRespuesta
+
+    // Estudiantes de una movilidad (para el conductor) y cambio de estado
+    @GET("usuarios/estudiantes/{movilidad}")
+    suspend fun getEstudiantes(@Path("movilidad") movilidad: String): List<UsuarioDto>
+
+    @GET("usuarios/{id}")
+    suspend fun getUsuario(@Path("id") id: Long): UsuarioDto
+
+    @PUT("usuarios/{id}/estado")
+    suspend fun actualizarEstadoUsuario(@Path("id") id: Long, @Body body: EstadoBody): UsuarioDto
+
+    // ---------- ASISTENCIAS ----------
+    @GET("asistencias/{usuarioId}")
+    suspend fun getAsistencias(@Path("usuarioId") usuarioId: Long): List<AsistenciaDto>
 
     // ---------- UBICACIONES (seguimiento del bus) ----------
     // El apoderado lee la posición del bus.

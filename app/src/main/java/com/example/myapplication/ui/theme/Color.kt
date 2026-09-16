@@ -1,5 +1,8 @@
 package com.example.myapplication.ui.theme
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
 // Paleta de marca — derivada del mockup del rol Conductor.
@@ -15,8 +18,14 @@ val AppBackground = Color(0xFFF4F5FB)
 val SurfaceWhite = Color(0xFFFFFFFF)
 val SurfaceMuted = Color(0xFFF0F1F7)
 
-val TextPrimary = Color(0xFF1C1B2E)
-val TextSecondary = Color(0xFF6B6A7C)
+// Colores de texto para el tema claro
+val LightTextPrimary = Color(0xFF1C1B2E)
+val LightTextSecondary = Color(0xFF6B6A7C)
+
+// Texto ADAPTABLE al tema: MyApplicationTheme los cambia a blanco en modo oscuro.
+var TextPrimary by mutableStateOf(LightTextPrimary)
+var TextSecondary by mutableStateOf(LightTextSecondary)
+
 val Divider = Color(0xFFE6E7EF)
 
 // Estados y acentos

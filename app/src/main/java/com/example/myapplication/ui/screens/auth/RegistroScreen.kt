@@ -29,8 +29,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.Icon
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.data.models.UsuarioDto
+import com.example.myapplication.ui.theme.SuccessGreen
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.example.myapplication.ui.theme.AccentBlue
 import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.SanAgustinRed
@@ -53,10 +68,24 @@ fun RegistroScreen(
     var contrasena by remember { mutableStateOf("") }
     var pregunta by remember { mutableStateOf("") }
     var respuesta by remember { mutableStateOf("") }
-    var rol by remember { mutableStateOf("ESTUDIANTE") }
     var estudiante by remember { mutableStateOf("") }
     var grado by remember { mutableStateOf("") }
     var movilidad by remember { mutableStateOf("") }
+    var latitud by remember { mutableStateOf("") }
+    var longitud by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    // Al conceder el permiso, obtiene la ubicación y la guarda.
+    val pedirPermiso = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            obtenerUbicacion(context) { lat, lng ->
+                latitud = lat.toString()
+                longitud = lng.toString()
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -73,23 +102,42 @@ fun RegistroScreen(
         Campo("Contraseña", contrasena, esClave = true) { contrasena = it }
 
         Spacer(Modifier.height(6.dp))
-        Text("Rol", color = TextSecondary, fontSize = 13.sp)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            BotonRol("Estudiante", rol == "ESTUDIANTE", Modifier.weight(1f)) { rol = "ESTUDIANTE" }
-            BotonRol("Conductor", rol == "CONDUCTOR", Modifier.weight(1f)) { rol = "CONDUCTOR" }
-        }
-        Spacer(Modifier.height(10.dp))
-
         Text("Pregunta de seguridad (para recuperar tu contraseña)", color = TextSecondary, fontSize = 13.sp)
         Campo("Pregunta (ej. ¿Nombre de tu mascota?)", pregunta) { pregunta = it }
         Campo("Respuesta", respuesta) { respuesta = it }
 
-        if (rol == "ESTUDIANTE") {
-            Spacer(Modifier.height(10.dp))
-            Text("Datos del estudiante", color = TextSecondary, fontSize = 13.sp)
-            Campo("Nombre del estudiante", estudiante) { estudiante = it }
-            Campo("Grado", grado) { grado = it }
-            Campo("Movilidad (ej. Movilidad N°04)", movilidad) { movilidad = it }
+        Spacer(Modifier.height(10.dp))
+        Text("Datos del estudiante", color = TextSecondary, fontSize = 13.sp)
+        Campo("Nombre del estudiante", estudiante) { estudiante = it }
+        Campo("Grado", grado) { grado = it }
+        Campo("Movilidad (ej. Movilidad N°04)", movilidad) { movilidad = it }
+
+        Text("Punto de recojo del estudiante", color = TextSecondary, fontSize = 13.sp)
+        OutlinedButton(
+            onClick = {
+                val tienePermiso = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+                if (tienePermiso) {
+                    obtenerUbicacion(context) { lat, lng ->
+                        latitud = lat.toString()
+                        longitud = lng.toString()
+                    }
+                } else {
+                    pedirPermiso.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            },
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Filled.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.size(8.dp))
+            Text("Usar mi ubicación actual")
+        }
+        if (latitud.isNotBlank() && longitud.isNotBlank()) {
+            Text("Ubicación guardada: $latitud, $longitud", color = SuccessGreen, fontSize = 12.sp)
+        } else {
+            Text("Aún no has marcado tu ubicación", color = TextSecondary, fontSize = 12.sp)
         }
 
         if (viewModel.error != null) {
@@ -106,10 +154,12 @@ fun RegistroScreen(
                     contrasena = contrasena,
                     pregunta = pregunta,
                     respuesta = respuesta,
-                    rol = rol,
-                    estudianteNombre = if (rol == "ESTUDIANTE") estudiante else null,
-                    estudianteGrado = if (rol == "ESTUDIANTE") grado else null,
-                    movilidad = movilidad.ifBlank { null }
+                    rol = "ESTUDIANTE",
+                    estudianteNombre = estudiante,
+                    estudianteGrado = grado,
+                    movilidad = movilidad.ifBlank { null },
+                    lat = latitud.toDoubleOrNull(),
+                    lng = longitud.toDoubleOrNull()
                 )
                 viewModel.registrar(dto) { onRegistrado() }
             },
@@ -139,16 +189,16 @@ private fun Campo(etiqueta: String, valor: String, esClave: Boolean = false, onC
     Spacer(Modifier.height(10.dp))
 }
 
-@Composable
-private fun BotonRol(texto: String, activo: Boolean, modifier: Modifier, onClick: () -> Unit) {
-    if (activo) {
-        Button(onClick = onClick, modifier = modifier, shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)) {
-            Text(texto)
-        }
-    } else {
-        OutlinedButton(onClick = onClick, modifier = modifier, shape = RoundedCornerShape(12.dp)) {
-            Text(texto, color = TextPrimary)
-        }
+// Obtiene la ubicación actual del dispositivo (GPS) una sola vez.
+private fun obtenerUbicacion(context: Context, onListo: (Double, Double) -> Unit) {
+    val fused = LocationServices.getFusedLocationProviderClient(context)
+    try {
+        fused.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+            .addOnSuccessListener { loc ->
+                if (loc != null) onListo(loc.latitude, loc.longitude)
+            }
+    } catch (e: SecurityException) {
+        // sin permiso de ubicación
     }
 }
+

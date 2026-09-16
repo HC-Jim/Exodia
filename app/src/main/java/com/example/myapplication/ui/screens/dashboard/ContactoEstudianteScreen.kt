@@ -46,7 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.repositories.MockConductor
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.theme.IndigoPrimary
@@ -59,9 +59,10 @@ import com.example.myapplication.ui.theme.WarningAmber
 @Composable
 fun ContactoEstudianteScreen(
     onRetroceder: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AlumnosViewModel = viewModel()
 ) {
-    val alumno = MockConductor.proximaEntrega
+    val alumno = viewModel.proximaEntrega
     var busqueda by remember { mutableStateOf("") }
     val checks = remember { mutableStateListOf(false, false, false) }
 
@@ -95,11 +96,11 @@ fun ContactoEstudianteScreen(
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                InicialesAvatar(nombre = alumno.nombre, tamano = 44.dp)
+                InicialesAvatar(nombre = alumno?.nombre ?: "Estudiante", tamano = 44.dp)
                 Spacer(Modifier.size(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(alumno.nombre, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                    Text(alumno.direccion, color = TextSecondary, fontSize = 13.sp)
+                    Text(alumno?.nombre ?: "Estudiante", fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    Text(alumno?.direccion ?: "", color = TextSecondary, fontSize = 13.sp)
                 }
                 Box(
                     modifier = Modifier

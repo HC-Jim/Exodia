@@ -51,7 +51,14 @@ class AuthRepository {
             estudianteGrado = dto.estudianteGrado,
             movilidad = dto.movilidad,
             lat = dto.lat,
-            lng = dto.lng
+            lng = dto.lng,
+            celular = dto.celular,
+            contactoEmergencia = dto.contactoEmergencia,
+            dni = dto.dni,
+            licencia = dto.licencia,
+            placa = dto.placa,
+            zona = dto.zona,
+            estado = dto.estado
         )
     }
 }

@@ -39,7 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.repositories.MockConductor
+import com.example.myapplication.core.utils.Sesion
+import com.example.myapplication.domain.entities.ConductorPerfil
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.theme.DangerRed
@@ -55,7 +56,18 @@ fun PerfilConductorScreen(
     onActualizar: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
-    val p = MockConductor.perfilConductor
+    // Perfil del conductor tomado del usuario que inició sesión.
+    val u = Sesion.usuario
+    val p = ConductorPerfil(
+        nombre = u?.nombre ?: "Conductor",
+        celular = u?.celular ?: "—",
+        correo = u?.correo ?: "—",
+        contactoEmergencia = u?.contactoEmergencia ?: "—",
+        dni = u?.dni ?: "—",
+        licencia = u?.licencia ?: "—",
+        placa = u?.placa ?: "—",
+        zona = u?.zona ?: "—"
+    )
     Column(
         modifier = modifier
             .fillMaxSize()

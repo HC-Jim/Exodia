@@ -59,6 +59,12 @@ fun MyApplicationTheme(
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColors else LightColors
+
+    // Ajusta el color del texto ANTES de componer las pantallas hijas, para que
+    // en modo oscuro la letra salga blanca en el mismo frame (no en el siguiente).
+    TextPrimary = if (darkTheme) DarkTextPrimary else LightTextPrimary
+    TextSecondary = if (darkTheme) DarkTextSecondary else LightTextSecondary
+
     val base = LocalDensity.current
     val densidad = Density(density = base.density, fontScale = base.fontScale * AppSettings.escalaTexto)
 

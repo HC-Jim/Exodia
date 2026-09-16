@@ -9,19 +9,6 @@ import com.example.myapplication.ui.theme.WarningAmber
  * Entidades de negocio del rol Apoderado.
  */
 
-data class Hijo(
-    val id: String,
-    val nombre: String,
-    val grado: String,
-    val movilidad: String,
-    val paradero: String,
-    val contactoNombre: String,
-    val contactoRol: String,
-    val color: Color,
-    val lat: Double? = null,   // punto de recogida del estudiante
-    val lng: Double? = null
-)
-
 data class Comunicado(
     val id: String,
     val titulo: String,
@@ -45,11 +32,3 @@ enum class EstadoAsistencia(val etiqueta: String, val color: Color) {
     JUSTIFICADO("Justificado", AccentBlue),
     SIN_CLASE("Sin clase", Color(0xFFCBD2E0))
 }
-
-/** Un paso del seguimiento del transporte (línea de tiempo). */
-data class PasoRuta(
-    val titulo: String,
-    val detalle: String,
-    val hora: String,
-    val completado: Boolean
-)

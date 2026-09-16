@@ -1,15 +1,14 @@
 package com.example.myapplication.data.remote
 
 import androidx.compose.ui.graphics.Color
-import com.example.myapplication.data.models.AlumnoDto
 import com.example.myapplication.data.models.ComunicadoDto
-import com.example.myapplication.data.models.HijoDto
 import com.example.myapplication.data.models.NotaDto
 import com.example.myapplication.data.models.UbicacionDto
+import com.example.myapplication.data.models.UsuarioDto
 import com.example.myapplication.domain.entities.Alumno
 import com.example.myapplication.domain.entities.Comunicado
+import com.example.myapplication.domain.entities.EstadoAsistencia
 import com.example.myapplication.domain.entities.EstadoEntrega
-import com.example.myapplication.domain.entities.Hijo
 import com.example.myapplication.domain.entities.Nota
 import com.example.myapplication.domain.entities.Ubicacion
 import com.example.myapplication.ui.theme.AccentBlue
@@ -31,29 +30,34 @@ private fun colorPorIndice(indice: Int): Color {
     return paleta[posicion]
 }
 
-// ---------- ALUMNO ----------
-fun AlumnoDto.aDominio(): Alumno {
-    // Convierte el texto del estado al enum del dominio.
-    val estadoEnum: EstadoEntrega
-    if (estado == "ABORDO") {
-        estadoEnum = EstadoEntrega.ABORDO
-    } else if (estado == "ENTREGADO") {
-        estadoEnum = EstadoEntrega.ENTREGADO
-    } else {
-        estadoEnum = EstadoEntrega.PENDIENTE
-    }
+// ---------- ESTUDIANTE (usuario) -> ALUMNO ----------
+fun List<UsuarioDto>.aAlumnos(): List<Alumno> {
+    val lista = mutableListOf<Alumno>()
+    for (dto in this) {
+        val estadoEnum: EstadoEntrega
+        if (dto.estado == "ENTREGADO") {
+            estadoEnum = EstadoEntrega.ENTREGADO
+        } else if (dto.estado == "CANCELADO") {
+            estadoEnum = EstadoEntrega.CANCELADO
+        } else {
+            estadoEnum = EstadoEntrega.PENDIENTE
+        }
 
-    return Alumno(
-        id = id.toString(),
-        nombre = nombre,
-        grado = grado ?: "",
-        direccion = direccion ?: "",
-        paradero = paradero ?: "",
-        horaEntrega = horaEntrega,
-        estado = estadoEnum,
-        lat = lat,
-        lng = lng
-    )
+        lista.add(
+            Alumno(
+                id = dto.id.toString(),
+                nombre = dto.estudianteNombre ?: dto.nombre ?: "Estudiante",
+                grado = dto.estudianteGrado ?: "",
+                direccion = "",
+                paradero = dto.movilidad ?: "",
+                horaEntrega = null,
+                estado = estadoEnum,
+                lat = dto.lat,
+                lng = dto.lng
+            )
+        )
+    }
+    return lista
 }
 
 // ---------- COMUNICADO ----------
@@ -90,26 +94,13 @@ fun List<NotaDto>.aNotas(): List<Nota> {
     return lista
 }
 
-// ---------- HIJO ----------
-fun List<HijoDto>.aHijos(): List<Hijo> {
-    val lista = mutableListOf<Hijo>()
-    for (i in this.indices) {
-        val dto = this[i]
-        val hijo = Hijo(
-            id = dto.id.toString(),
-            nombre = dto.nombre,
-            grado = dto.grado ?: "",
-            movilidad = dto.movilidad ?: "",
-            paradero = dto.paradero ?: "",
-            contactoNombre = dto.contactoNombre ?: "",
-            contactoRol = dto.contactoRol ?: "",
-            color = colorPorIndice(i),
-            lat = dto.lat,
-            lng = dto.lng
-        )
-        lista.add(hijo)
-    }
-    return lista
+// ---------- ASISTENCIA ----------
+fun estadoAsistenciaDe(texto: String?): EstadoAsistencia {
+    return if (texto == "TARDANZA") EstadoAsistencia.TARDANZA
+    else if (texto == "FALTA") EstadoAsistencia.FALTA
+    else if (texto == "JUSTIFICADO") EstadoAsistencia.JUSTIFICADO
+    else if (texto == "SIN_CLASE") EstadoAsistencia.SIN_CLASE
+    else EstadoAsistencia.PRESENTE
 }
 
 // ---------- UBICACION ----------

@@ -40,9 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.domain.entities.Hijo
-import com.example.myapplication.data.repositories.MockApoderado
-import com.example.myapplication.ui.components.ChipsHijos
+import com.example.myapplication.core.utils.Sesion
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.theme.DangerRed
@@ -54,16 +52,20 @@ import com.example.myapplication.ui.theme.TextSecondary
 
 @Composable
 fun PerfilAlumnoScreen(
-    hijo: Hijo,
     modifier: Modifier = Modifier,
     esConfiguracion: Boolean = false,
     onRetroceder: (() -> Unit)? = null,
-    onHijoClick: (Hijo) -> Unit = {},
     onNotas: () -> Unit = {},
     onAsistencias: () -> Unit = {},
     onLlamar: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
+    // Datos del estudiante desde la sesión.
+    val u = Sesion.usuario
+    val nombreEstudiante = u?.estudianteNombre ?: "Estudiante"
+    val gradoEstudiante = u?.estudianteGrado ?: ""
+    val movilidadEstudiante = u?.movilidad ?: ""
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -80,19 +82,17 @@ fun PerfilAlumnoScreen(
             accionDescripcion = if (esConfiguracion) "Configuración" else "Volver",
             onAccion = if (esConfiguracion) ({}) else onRetroceder
         )
-        Spacer(Modifier.height(4.dp))
-        ChipsHijos(hijos = MockApoderado.hijos, onHijoClick = onHijoClick)
         Spacer(Modifier.height(20.dp))
 
         InicialesAvatar(
-            nombre = hijo.nombre,
+            nombre = nombreEstudiante,
             tamano = 110.dp,
-            colorFondo = hijo.color,
+            colorFondo = IndigoPrimary,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            hijo.nombre,
+            nombreEstudiante,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
@@ -104,9 +104,8 @@ fun PerfilAlumnoScreen(
             modifier = Modifier.padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            FilaDato(Icons.Filled.School, "Grado ${hijo.grado}")
-            FilaDato(Icons.Filled.DirectionsBus, hijo.movilidad)
-            FilaDato(Icons.Filled.Place, hijo.paradero)
+            FilaDato(Icons.Filled.School, "Grado $gradoEstudiante")
+            FilaDato(Icons.Filled.DirectionsBus, movilidadEstudiante)
         }
 
         Spacer(Modifier.height(20.dp))
@@ -147,8 +146,8 @@ fun PerfilAlumnoScreen(
                 Icon(Icons.Filled.Phone, contentDescription = null, tint = SuccessGreen)
                 Spacer(Modifier.size(12.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(hijo.contactoNombre, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                    Text(hijo.contactoRol, color = TextSecondary, fontSize = 13.sp)
+                    Text("Conductor asignado", fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    Text(movilidadEstudiante, color = TextSecondary, fontSize = 13.sp)
                 }
                 TextButton(onClick = onLlamar) {
                     Icon(Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -209,7 +208,7 @@ private fun AccesoRapido(texto: String, icono: ImageVector, modifier: Modifier =
 @Composable
 private fun PerfilAlumnoPreview() {
     MyApplicationTheme {
-        PerfilAlumnoScreen(hijo = MockApoderado.julio, onRetroceder = {})
+        PerfilAlumnoScreen(onRetroceder = {})
     }
 }
 
@@ -217,6 +216,6 @@ private fun PerfilAlumnoPreview() {
 @Composable
 private fun ConfiguracionApoderadoPreview() {
     MyApplicationTheme {
-        PerfilAlumnoScreen(hijo = MockApoderado.maria, esConfiguracion = true)
+        PerfilAlumnoScreen(esConfiguracion = true)
     }
 }

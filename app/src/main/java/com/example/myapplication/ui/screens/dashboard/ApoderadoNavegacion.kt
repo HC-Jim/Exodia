@@ -14,8 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.myapplication.domain.entities.Hijo
-import com.example.myapplication.data.repositories.MockApoderado
 
 /** Destinos principales del apoderado (máximo cuatro). */
 enum class TabApoderado(val etiqueta: String, val icono: ImageVector) {
@@ -31,16 +29,14 @@ enum class RutaApoderado {
     PERFIL_HIJO,
     NOTAS,
     ASISTENCIAS,
-    EVENTO
+    EVENTO,
+    RECORDATORIOS
 }
 
 class NavegadorApoderado(
     private val pila: SnapshotStateList<RutaApoderado>
 ) {
     var tab by mutableStateOf(TabApoderado.INICIO)
-        private set
-
-    var hijoActivo by mutableStateOf<Hijo>(MockApoderado.julio)
         private set
 
     val overlay: RutaApoderado? get() = pila.lastOrNull()
@@ -50,8 +46,7 @@ class NavegadorApoderado(
         tab = nuevo
     }
 
-    fun abrir(ruta: RutaApoderado, hijo: Hijo = hijoActivo) {
-        hijoActivo = hijo
+    fun abrir(ruta: RutaApoderado) {
         pila.add(ruta)
     }
 

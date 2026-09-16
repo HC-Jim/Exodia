@@ -34,7 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.repositories.MockConductor
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.core.utils.Sesion
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.components.MapaSimulado
 import com.example.myapplication.ui.theme.TextPrimary
@@ -46,7 +47,8 @@ import com.example.myapplication.ui.theme.VioletGradientStart
 fun InicioConductorScreen(
     onIniciarRuta: () -> Unit,
     onFinalizarRuta: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: AlumnosViewModel = viewModel()
 ) {
     Column(
         modifier = modifier
@@ -71,9 +73,12 @@ fun InicioConductorScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // Tarjeta "Iniciar ruta"
+        // Tarjeta "Iniciar ruta": reinicia los estados y abre el seguimiento.
         Card(
-            onClick = onIniciarRuta,
+            onClick = {
+                viewModel.reiniciarRuta()
+                onIniciarRuta()
+            },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -153,12 +158,12 @@ private fun SaludoConductor() {
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        InicialesAvatar(nombre = MockConductor.nombreCorto, tamano = 46.dp)
+        InicialesAvatar(nombre = (Sesion.usuario?.nombre ?: "Conductor"), tamano = 46.dp)
         Spacer(Modifier.size(12.dp))
         Column(Modifier.weight(1f)) {
             Text("¡Hola!", color = TextSecondary, fontSize = 13.sp)
             Text(
-                MockConductor.nombreCorto,
+                (Sesion.usuario?.nombre ?: "Conductor"),
                 color = TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp

@@ -29,8 +29,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entities.EstadoAsistencia
-import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
@@ -39,7 +39,8 @@ import com.example.myapplication.ui.theme.TextSecondary
 @Composable
 fun AsistenciasScreen(
     modifier: Modifier = Modifier,
-    onRetroceder: (() -> Unit)? = null
+    onRetroceder: (() -> Unit)? = null,
+    viewModel: AsistenciasViewModel = viewModel()
 ) {
     Column(
         modifier = modifier
@@ -54,7 +55,7 @@ fun AsistenciasScreen(
         )
 
         Text(
-            MockApoderado.nombreMes,
+            viewModel.nombreMes,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),
@@ -67,9 +68,9 @@ fun AsistenciasScreen(
 
         CalendarioMes(
             modifier = Modifier.padding(horizontal = 16.dp),
-            offset = MockApoderado.offsetPrimerDia,
-            dias = MockApoderado.diasDelMes,
-            estados = MockApoderado.asistencia
+            offset = viewModel.offsetPrimerDia,
+            dias = viewModel.diasDelMes,
+            estados = viewModel.asistencia
         )
 
         Spacer(Modifier.size(20.dp))

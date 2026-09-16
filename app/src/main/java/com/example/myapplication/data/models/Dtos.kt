@@ -10,18 +10,6 @@ import com.google.gson.annotations.SerializedName
  * Estos DTOs luego se convierten a las entidades del dominio en `data/remote/Mapeadores.kt`.
  */
 
-data class AlumnoDto(
-    val id: Long,
-    val nombre: String,
-    val grado: String?,
-    val direccion: String?,
-    val paradero: String?,
-    @SerializedName("hora_entrega") val horaEntrega: String?,
-    val estado: String?,
-    val lat: Double? = null,
-    val lng: Double? = null
-)
-
 data class ComunicadoDto(
     val id: Long,
     val titulo: String,
@@ -34,18 +22,6 @@ data class NotaDto(
     val curso: String,
     val detalle: String?,
     val valor: String?
-)
-
-data class HijoDto(
-    val id: Long,
-    val nombre: String,
-    val grado: String?,
-    val movilidad: String?,
-    val paradero: String?,
-    @SerializedName("contacto_nombre") val contactoNombre: String?,
-    @SerializedName("contacto_rol") val contactoRol: String?,
-    val lat: Double? = null,
-    val lng: Double? = null
 )
 
 /** Ubicación del bus (seguimiento en el mapa). */
@@ -71,11 +47,29 @@ data class UsuarioDto(
     @SerializedName("estudiante_grado") val estudianteGrado: String? = null,
     val movilidad: String? = null,
     val lat: Double? = null,
-    val lng: Double? = null
+    val lng: Double? = null,
+    // Datos del perfil del conductor
+    val celular: String? = null,
+    @SerializedName("contacto_emergencia") val contactoEmergencia: String? = null,
+    val dni: String? = null,
+    val licencia: String? = null,
+    val placa: String? = null,
+    val zona: String? = null,
+    val estado: String? = null   // estado de recojo del estudiante
+)
+
+/** Día de asistencia registrado. */
+data class AsistenciaDto(
+    val id: Long = 0,
+    val dia: Int = 0,
+    val estado: String? = null
 )
 
 /** Cuerpo del login. */
 data class LoginBody(val correo: String, val contrasena: String)
+
+/** Cuerpo para cambiar el estado de recojo de un estudiante. */
+data class EstadoBody(val estado: String)
 
 /** Cuerpo para restablecer la contraseña. */
 data class RestablecerBody(

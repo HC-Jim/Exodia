@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.data.repositories.MockApoderado
 import com.example.myapplication.ui.screens.dashboard.RutaApoderado
 import com.example.myapplication.ui.screens.dashboard.TabApoderado
 import com.example.myapplication.ui.screens.dashboard.rememberNavegadorApoderado
@@ -49,9 +48,7 @@ fun ApoderadoApp(
         Box(Modifier.padding(innerPadding)) {
             when (overlay) {
                 RutaApoderado.PERFIL_HIJO -> PerfilAlumnoScreen(
-                    hijo = nav.hijoActivo,
                     onRetroceder = { nav.retroceder() },
-                    onHijoClick = { nav.abrir(RutaApoderado.PERFIL_HIJO, it) },
                     onNotas = { nav.abrir(RutaApoderado.NOTAS) },
                     onAsistencias = { nav.abrir(RutaApoderado.ASISTENCIAS) },
                     onCerrarSesion = onCerrarSesion
@@ -63,15 +60,17 @@ fun ApoderadoApp(
 
                 RutaApoderado.EVENTO -> EventoDetalleScreen(onRetroceder = { nav.retroceder() })
 
+                RutaApoderado.RECORDATORIOS -> RecordatoriosScreen(onRetroceder = { nav.retroceder() })
+
                 null -> when (nav.tab) {
                     TabApoderado.INICIO -> InicioApoderadoScreen(
                         onMovilidad = { nav.seleccionarTab(TabApoderado.SEGUIMIENTO) },
                         onColegio = { nav.seleccionarTab(TabApoderado.COLEGIO) },
                         onCalendario = { nav.seleccionarTab(TabApoderado.COLEGIO) },
                         onAsistencias = { nav.abrir(RutaApoderado.ASISTENCIAS) },
-                        onHijoClick = { nav.abrir(RutaApoderado.PERFIL_HIJO, it) },
                         onNotas = { nav.abrir(RutaApoderado.NOTAS) },
-                        onEventos = { nav.abrir(RutaApoderado.EVENTO) }
+                        onEventos = { nav.abrir(RutaApoderado.EVENTO) },
+                        onRecordatorios = { nav.abrir(RutaApoderado.RECORDATORIOS) }
                     )
 
                     TabApoderado.SEGUIMIENTO -> SeguimientoApoderadoScreen()

@@ -13,5 +13,13 @@ data class Usuario(
     val estudianteGrado: String?,
     val movilidad: String?,
     val lat: Double?,
-    val lng: Double?
+    val lng: Double?,
+    // Datos del perfil del conductor
+    val celular: String? = null,
+    val contactoEmergencia: String? = null,
+    val dni: String? = null,
+    val licencia: String? = null,
+    val placa: String? = null,
+    val zona: String? = null,
+    val estado: String? = null   // estado de recojo (para el estudiante)
 )

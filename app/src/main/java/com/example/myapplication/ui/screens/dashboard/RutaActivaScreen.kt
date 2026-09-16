@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -40,7 +39,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
-import com.example.myapplication.data.repositories.MockConductor
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.example.myapplication.core.utils.Sesion
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,22 +53,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entities.Alumno
 import com.example.myapplication.domain.entities.EstadoEntrega
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
-import com.example.myapplication.ui.theme.WarningAmber
 
 @Composable
 fun RutaActivaScreen(
@@ -80,7 +78,7 @@ fun RutaActivaScreen(
 ) {
     // ---- Envío del GPS del conductor (seguimiento) ----
     val context = LocalContext.current
-    val movilidad = MockConductor.perfil.movilidad
+    val movilidad = Sesion.usuario?.movilidad ?: "Movilidad N°04"
 
     // Punto de referencia: 12°01'14.0"S 76°57'26.4"W
     val puntoReferencia = LatLng(-12.020556, -76.957333)
@@ -111,12 +109,15 @@ fun RutaActivaScreen(
             val fused = LocationServices.getFusedLocationProviderClient(context)
             while (true) {
                 try {
-                    fused.lastLocation.addOnSuccessListener { loc ->
-                        if (loc != null) {
-                            posConductor = LatLng(loc.latitude, loc.longitude)
-                            ubicacionVM.enviar(movilidad, loc.latitude, loc.longitude)
+                    // getCurrentLocation pide una posición FRESCA (no la guardada en caché),
+                    // así toma la ubicación actual del emulador/dispositivo.
+                    fused.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, CancellationTokenSource().token)
+                        .addOnSuccessListener { loc ->
+                            if (loc != null) {
+                                posConductor = LatLng(loc.latitude, loc.longitude)
+                                ubicacionVM.enviar(movilidad, loc.latitude, loc.longitude)
+                            }
                         }
-                    }
                 } catch (e: SecurityException) {
                     // sin permiso: no se envía
                 }
@@ -124,19 +125,9 @@ fun RutaActivaScreen(
             }
         }
     }
-    // Punto fijo del colegio (destino por defecto).
-    val colegio = LatLng(-12.018000, -76.954000)
-
     // Cámara del mapa: arranca centrada en la zona de los paraderos.
     val camara = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(puntoReferencia, 14f)
-    }
-
-    // Cuando cambia la posición del conductor o el próximo estudiante, recalcula la ruta por calles.
-    LaunchedEffect(posConductor, proxima?.id) {
-        if (proxima != null && proxima.lat != null && proxima.lng != null) {
-            viewModel.calcularRuta(posConductor, LatLng(proxima.lat, proxima.lng))
-        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -170,28 +161,12 @@ fun RutaActivaScreen(
                 }
             }
 
-            // 2) El punto del conductor (azul).
+            // 2) El punto actual del conductor (azul).
             Marker(
                 state = MarkerState(position = posConductor),
                 title = "Conductor",
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
             )
-
-            // 3) El punto del colegio (violeta, fijo por defecto).
-            Marker(
-                state = MarkerState(position = colegio),
-                title = "Colegio",
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)
-            )
-
-            // 4) Ruta por las CALLES del conductor hacia el próximo estudiante.
-            if (viewModel.ruta.size >= 2) {
-                Polyline(
-                    points = viewModel.ruta,
-                    color = IndigoPrimary,
-                    width = 8f
-                )
-            }
         }
 
         // Cabecera superior
@@ -256,55 +231,83 @@ fun RutaActivaScreen(
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
-            Column(Modifier.padding(18.dp)) {
+            Column(Modifier.padding(14.dp)) {
                 if (proxima == null) {
-                    Text("Ruta completada 🎉", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
-                    Text("No quedan entregas pendientes", color = TextSecondary, fontSize = 14.sp)
+                    Text("Ruta completada 🎉", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                    Text("Todos los estudiantes fueron atendidos", color = TextSecondary, fontSize = 13.sp)
                 } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Place, contentDescription = null, tint = IndigoPrimary, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.size(6.dp))
-                        Text("Próxima Entrega", color = TextSecondary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    var mostrarCancelar by remember { mutableStateOf(false) }
+
+                    Text("Próxima entrega", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    Text(proxima.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
+                    Text(proxima.direccion, color = TextSecondary, fontSize = 13.sp)
+                    Spacer(Modifier.height(10.dp))
+
+                    // Acciones principales: entregar o cancelar (con motivo).
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { viewModel.marcarEntregado(proxima) },
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+                        ) {
+                            Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.size(6.dp))
+                            Text("Entregar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                        Button(
+                            onClick = { mostrarCancelar = true },
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
+                        ) {
+                            Text("Cancelar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                     Spacer(Modifier.height(6.dp))
-                    Text(proxima.nombre, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextPrimary)
-                    Text(proxima.direccion, color = TextSecondary, fontSize = 14.sp)
-                    Spacer(Modifier.height(14.dp))
-                    // Marca la entrega: guarda en SQLite, registra historial e intenta enviar a la API.
-                    Button(
-                        onClick = { viewModel.marcarEntregado(proxima) },
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
-                    ) {
-                        Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.size(8.dp))
-                        Text("Marcar entregado", fontWeight = FontWeight.SemiBold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = onVerLista, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
+                        ) { Text("Listado", fontSize = 12.sp) }
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = { viewModel.marcarEntregado(proxima) }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
+                        ) { Text("Escanear QR", fontSize = 12.sp) }
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = onContactar, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
+                        ) { Text("Contactar", fontSize = 12.sp) }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    Button(
-                        onClick = onEscanearQR,
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary)
-                    ) {
-                        Icon(Icons.Filled.QrCodeScanner, contentDescription = null, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.size(8.dp))
-                        Text("Escanear QR", fontWeight = FontWeight.SemiBold)
+
+                    // Diálogo para elegir el motivo de la cancelación.
+                    if (mostrarCancelar) {
+                        val motivos = listOf(
+                            "No estaba en el paradero",
+                            "El apoderado canceló",
+                            "Dirección incorrecta",
+                            "Otro motivo"
+                        )
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { mostrarCancelar = false },
+                            confirmButton = {},
+                            dismissButton = {
+                                androidx.compose.material3.TextButton(onClick = { mostrarCancelar = false }) {
+                                    Text("Cerrar")
+                                }
+                            },
+                            title = { Text("Motivo de cancelación") },
+                            text = {
+                                Column {
+                                    for (motivo in motivos) {
+                                        androidx.compose.material3.TextButton(
+                                            onClick = {
+                                                viewModel.cancelar(proxima, motivo)
+                                                mostrarCancelar = false
+                                            }
+                                        ) { Text(motivo) }
+                                    }
+                                }
+                            }
+                        )
                     }
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    androidx.compose.material3.OutlinedButton(
-                        onClick = onVerLista,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp)
-                    ) { Text("Listado", fontSize = 13.sp) }
-                    androidx.compose.material3.OutlinedButton(
-                        onClick = onContactar,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp)
-                    ) { Text("Contactar", fontSize = 13.sp) }
                 }
             }
         }
@@ -332,23 +335,6 @@ private fun estudianteMasCercano(alumnos: List<Alumno>, desde: LatLng): Alumno? 
     }
 
     return masCercano
-}
-
-@Composable
-private fun MarcadorMapa(texto: String, fondo: Color, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(fondo),
-        contentAlignment = Alignment.Center
-    ) {
-        if (texto == "🚌") {
-            Icon(Icons.Filled.DirectionsBus, contentDescription = "Bus", tint = Color.White, modifier = Modifier.size(22.dp))
-        } else {
-            Text(texto, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-        }
-    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
