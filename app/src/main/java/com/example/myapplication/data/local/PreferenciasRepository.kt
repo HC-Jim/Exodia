@@ -14,7 +14,6 @@ private val Context.dataStore by preferencesDataStore(name = "ajustes")
 data class AjustesGuardados(
     val modoOscuro: Boolean,
     val escalaTexto: Float,
-    val mantenerPantalla: Boolean,
     val silenciarNotificaciones: Boolean
 )
 
@@ -30,7 +29,6 @@ class PreferenciasRepository(private val context: Context) {
     companion object {
         private val MODO_OSCURO = booleanPreferencesKey("modo_oscuro")
         private val ESCALA_TEXTO = floatPreferencesKey("escala_texto")
-        private val MANTENER = booleanPreferencesKey("mantener_pantalla")
         private val SILENCIAR = booleanPreferencesKey("silenciar_notificaciones")
     }
 
@@ -43,10 +41,6 @@ class PreferenciasRepository(private val context: Context) {
         context.dataStore.edit { ajustes -> ajustes[ESCALA_TEXTO] = valor }
     }
 
-    suspend fun guardarMantenerPantalla(valor: Boolean) {
-        context.dataStore.edit { ajustes -> ajustes[MANTENER] = valor }
-    }
-
     suspend fun guardarSilenciarNotificaciones(valor: Boolean) {
         context.dataStore.edit { ajustes -> ajustes[SILENCIAR] = valor }
     }
@@ -57,7 +51,6 @@ class PreferenciasRepository(private val context: Context) {
         return AjustesGuardados(
             modoOscuro = ajustes[MODO_OSCURO] ?: false,
             escalaTexto = ajustes[ESCALA_TEXTO] ?: 1f,
-            mantenerPantalla = ajustes[MANTENER] ?: false,
             silenciarNotificaciones = ajustes[SILENCIAR] ?: false
         )
     }

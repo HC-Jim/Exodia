@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.NotificationsOff
-import androidx.compose.material.icons.filled.ScreenLockPortrait
 import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -96,12 +95,6 @@ fun AjustesScreen(
             )
         }
 
-        FilaSwitch(
-            icono = Icons.Filled.ScreenLockPortrait,
-            titulo = "Mantener pantalla encendida",
-            valor = AppSettings.mantenerPantalla,
-            onCambio = { viewModel.setMantenerPantalla(it) }
-        )
         FilaSwitch(
             icono = Icons.Filled.NotificationsOff,
             titulo = "Silenciar notificaciones",

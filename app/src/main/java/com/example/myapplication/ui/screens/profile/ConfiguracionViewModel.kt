@@ -28,11 +28,6 @@ class ConfiguracionViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { prefs.guardarEscalaTexto(valor) }
     }
 
-    fun setMantenerPantalla(valor: Boolean) {
-        AppSettings.mantenerPantalla = valor
-        viewModelScope.launch { prefs.guardarMantenerPantalla(valor) }
-    }
-
     fun setSilenciarNotificaciones(valor: Boolean) {
         AppSettings.silenciarNotificaciones = valor
         viewModelScope.launch { prefs.guardarSilenciarNotificaciones(valor) }

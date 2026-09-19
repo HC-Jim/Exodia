@@ -15,6 +15,5 @@ import androidx.compose.runtime.setValue
 object AppSettings {
     var modoOscuro by mutableStateOf(false)
     var escalaTexto by mutableFloatStateOf(1f)      // 0.85f .. 1.30f
-    var mantenerPantalla by mutableStateOf(false)
     var silenciarNotificaciones by mutableStateOf(false)
 }
