@@ -22,15 +22,13 @@ import com.example.myapplication.data.local.PreferenciasRepository
 import com.example.myapplication.ui.screens.auth.LoginScreen
 import com.example.myapplication.ui.screens.auth.RecuperarScreen
 import com.example.myapplication.ui.screens.auth.RegistroScreen
-import com.example.myapplication.ui.screens.auth.Rol
-import com.example.myapplication.ui.screens.auth.SelectorRolScreen
 import com.example.myapplication.ui.screens.auth.SplashScreen
 import com.example.myapplication.ui.screens.auth.TwoFactorScreen
 import com.example.myapplication.ui.screens.dashboard.ApoderadoApp
 import com.example.myapplication.ui.screens.dashboard.ConductorApp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
-private enum class FaseApp { SPLASH, LOGIN, REGISTRO, RECUPERAR, DOS_PASOS, SELECTOR, CONDUCTOR, ESTUDIANTE }
+private enum class FaseApp { SPLASH, LOGIN, REGISTRO, RECUPERAR, DOS_PASOS, CONDUCTOR, ESTUDIANTE }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +59,7 @@ private fun AppRaiz() {
     var fase by remember { mutableStateOf(FaseApp.SPLASH) }
 
     when (fase) {
-            FaseApp.SPLASH -> SplashScreen(onListo = { fase = FaseApp.LOGIN })
+        FaseApp.SPLASH -> SplashScreen(onListo = { fase = FaseApp.LOGIN })
         FaseApp.LOGIN -> LoginScreen(
             onIniciar = { fase = FaseApp.DOS_PASOS },
             onRegistrar = { fase = FaseApp.REGISTRO },
@@ -82,13 +80,6 @@ private fun AppRaiz() {
             },
             onCancelar = { fase = FaseApp.LOGIN }
         )
-        FaseApp.SELECTOR -> SelectorRolScreen(onRol = { rol ->
-            if (rol == Rol.CONDUCTOR) {
-                fase = FaseApp.CONDUCTOR
-            } else {
-                fase = FaseApp.ESTUDIANTE
-            }
-        })
         FaseApp.CONDUCTOR -> ConductorApp(onCerrarSesion = { fase = FaseApp.LOGIN })
         FaseApp.ESTUDIANTE -> ApoderadoApp(onCerrarSesion = { fase = FaseApp.LOGIN })
     }
