@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.ubicacion
 
 import android.app.Application
 import androidx.compose.runtime.getValue

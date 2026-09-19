@@ -2,7 +2,6 @@ package com.example.myapplication.domain.entities
 
 /**
  * Usuario autenticado. Cada usuario tiene UN solo estudiante asociado
- * (los campos estudiante* aplican al rol Apoderado).
  */
 data class Usuario(
     val id: Long,

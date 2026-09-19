@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.asistencias
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -21,10 +21,12 @@ class AsistenciasViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DatosRepository(app)
 
+    // Datos fijos del mes que dibuja el calendario.
     val nombreMes = "Septiembre 2026"
     val diasDelMes = 30
     val offsetPrimerDia = 2   // 1 de septiembre cae en martes (0=Dom)
 
+    // Estado de cada día: día del mes -> estado de asistencia.
     var asistencia by mutableStateOf<Map<Int, EstadoAsistencia>>(emptyMap())
         private set
 
@@ -34,6 +36,7 @@ class AsistenciasViewModel(app: Application) : AndroidViewModel(app) {
 
     fun cargar() {
         viewModelScope.launch {
+            // Primero el calendario "normal", luego los días especiales de la API encima.
             val base = construirBase()
             val usuarioId = Sesion.usuario?.id
             val excepciones = if (usuarioId != null) repo.obtenerAsistencias(usuarioId) else emptyMap()
@@ -42,6 +45,7 @@ class AsistenciasViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // Calendario base: días de semana como PRESENTE y fines de semana como SIN_CLASE.
     private fun construirBase(): Map<Int, EstadoAsistencia> {
         val mapa = mutableMapOf<Int, EstadoAsistencia>()
         for (dia in 1..diasDelMes) {

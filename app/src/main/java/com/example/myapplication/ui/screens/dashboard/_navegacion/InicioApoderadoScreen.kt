@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard._navegacion
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +44,7 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Pantalla de inicio del apoderado: saludo, ficha del estudiante y accesos a las secciones.
 @Composable
 fun InicioApoderadoScreen(
     onMovilidad: () -> Unit,
@@ -58,6 +59,7 @@ fun InicioApoderadoScreen(
     // Un solo estudiante por usuario: se toma de la sesión.
     val usuario = Sesion.usuario
 
+    // Opciones del menú hamburguesa (arriba a la izquierda).
     val opcionesMenu = listOf(
         OpcionMenu("Colegio", Icons.Filled.School, onColegio),
         OpcionMenu("Calendario", Icons.Filled.CalendarMonth, onCalendario),
@@ -136,6 +138,7 @@ fun InicioApoderadoScreen(
     }
 }
 
+// Botón grande de acceso a una sección (ícono + texto + flecha).
 @Composable
 private fun BotonMenu(texto: String, icono: ImageVector, onClick: () -> Unit) {
     Surface(

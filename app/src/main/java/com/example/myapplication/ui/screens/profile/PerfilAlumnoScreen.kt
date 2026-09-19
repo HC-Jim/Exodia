@@ -50,6 +50,8 @@ import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Perfil del estudiante que ve el apoderado: datos, accesos a notas/asistencias y contacto del conductor.
+// esConfiguracion cambia el encabezado para reusar esta misma pantalla como "Configuración".
 @Composable
 fun PerfilAlumnoScreen(
     modifier: Modifier = Modifier,
@@ -175,6 +177,7 @@ fun PerfilAlumnoScreen(
     }
 }
 
+// Fila simple de un dato del estudiante (ícono + texto).
 @Composable
 private fun FilaDato(icono: ImageVector, texto: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -184,6 +187,7 @@ private fun FilaDato(icono: ImageVector, texto: String) {
     }
 }
 
+// Botón de acceso rápido (tarjeta con ícono y texto) a una sección del estudiante.
 @Composable
 private fun AccesoRapido(texto: String, icono: ImageVector, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(

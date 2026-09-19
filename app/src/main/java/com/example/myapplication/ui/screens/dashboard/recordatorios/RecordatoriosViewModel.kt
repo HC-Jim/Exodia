@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.recordatorios
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -15,6 +15,7 @@ class RecordatoriosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = RecordatorioRepository(app)
 
+    // Lista de recordatorios que muestra la pantalla.
     var recordatorios by mutableStateOf<List<Recordatorio>>(emptyList())
         private set
 
@@ -22,6 +23,7 @@ class RecordatoriosViewModel(app: Application) : AndroidViewModel(app) {
         cargar()
     }
 
+    // Relee la lista desde SQLite (se llama tras agregar o borrar para refrescar la UI).
     fun cargar() {
         recordatorios = repo.listar()
     }

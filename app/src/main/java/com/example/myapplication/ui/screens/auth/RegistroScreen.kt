@@ -63,6 +63,7 @@ fun RegistroScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = viewModel()
 ) {
+    // Un estado por cada campo del formulario (datos de cuenta, seguridad y del estudiante).
     var nombre by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
@@ -71,7 +72,7 @@ fun RegistroScreen(
     var estudiante by remember { mutableStateOf("") }
     var grado by remember { mutableStateOf("") }
     var movilidad by remember { mutableStateOf("") }
-    var latitud by remember { mutableStateOf("") }
+    var latitud by remember { mutableStateOf("") }   // punto de recojo (se llena con el GPS)
     var longitud by remember { mutableStateOf("") }
 
     val context = LocalContext.current
@@ -148,6 +149,7 @@ fun RegistroScreen(
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = {
+                // Junta todos los campos en un DTO y lo manda al ViewModel para registrar.
                 val dto = UsuarioDto(
                     nombre = nombre,
                     correo = correo,
@@ -175,6 +177,7 @@ fun RegistroScreen(
     }
 }
 
+// Campo de texto reutilizable para el formulario; esClave = true oculta el texto (contraseña).
 @Composable
 private fun Campo(etiqueta: String, valor: String, esClave: Boolean = false, onChange: (String) -> Unit) {
     OutlinedTextField(

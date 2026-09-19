@@ -23,8 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.screens.dashboard.NavegadorConductor
-import com.example.myapplication.ui.screens.dashboard.TabConductor
+import com.example.myapplication.ui.screens.dashboard._navegacion.NavegadorConductor
+import com.example.myapplication.ui.screens.dashboard._navegacion.TabConductor
 import com.example.myapplication.ui.theme.AccentBlue
 import com.example.myapplication.ui.theme.AccentPink
 import com.example.myapplication.ui.theme.IndigoLight

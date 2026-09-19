@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.alumnos
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -20,12 +20,15 @@ class AlumnosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DatosRepository(app)
 
+    // Lista de estudiantes de la ruta.
     var alumnos by mutableStateOf<List<Alumno>>(emptyList())
         private set
 
+    // true mientras se consulta la API.
     var cargando by mutableStateOf(false)
         private set
 
+    // Mensaje de error; null si no hubo problema.
     var error by mutableStateOf<String?>(null)
         private set
 
@@ -33,6 +36,7 @@ class AlumnosViewModel(app: Application) : AndroidViewModel(app) {
         cargar()
     }
 
+    // Movilidad del conductor logueado; usa una por defecto si no hay sesión.
     private fun movilidad(): String = Sesion.usuario?.movilidad ?: "Movilidad N°04"
 
     fun cargar() {

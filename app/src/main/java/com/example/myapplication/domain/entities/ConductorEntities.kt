@@ -13,6 +13,7 @@ enum class EstadoEntrega {
     CANCELADO
 }
 
+/** Estudiante dentro de la ruta del conductor, con su punto de recojo y estado de entrega. */
 data class Alumno(
     val id: String,
     val nombre: String,
@@ -25,6 +26,7 @@ data class Alumno(
     val lng: Double? = null
 )
 
+/** Datos que el apoderado ve del conductor asignado a su hijo. */
 data class PerfilConductor(
     val nombre: String,
     val gradoAsignado: String,

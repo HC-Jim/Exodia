@@ -22,8 +22,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.LocalPhone
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MedicalServices
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -50,10 +48,11 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Perfil del conductor: sus datos personales y del vehículo, más los contactos de emergencia
+// guardados localmente (SQLite) y la opción de cerrar sesión.
 @Composable
 fun PerfilConductorScreen(
     modifier: Modifier = Modifier,
-    onActualizar: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
     // Perfil del conductor tomado del usuario que inició sesión.
@@ -127,18 +126,21 @@ fun PerfilConductorScreen(
         }
 
         Spacer(Modifier.height(20.dp))
+        // Contactos de emergencia guardados localmente en SQLite (agregar / listar / borrar).
+        Text(
+            "CONTACTOS DE EMERGENCIA",
+            modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            color = TextSecondary
+        )
+        SeccionContactosEmergencia()
+
+        Spacer(Modifier.height(20.dp))
         Column(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(
-                onClick = onActualizar,
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary)
-            ) {
-                Text("Actualizar datos", fontWeight = FontWeight.SemiBold)
-            }
             OutlinedButton(
                 onClick = onCerrarSesion,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -154,6 +156,7 @@ fun PerfilConductorScreen(
     }
 }
 
+// Fila de un dato del perfil: ícono + etiqueta + valor (con color opcional para destacarlo).
 @Composable
 private fun Dato(icono: ImageVector, etiqueta: String, valor: String, valorColor: androidx.compose.ui.graphics.Color = TextPrimary) {
     Row(verticalAlignment = Alignment.CenterVertically) {

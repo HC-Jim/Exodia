@@ -1,6 +1,7 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.comunicados
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,43 +34,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.domain.entities.Nota
+import com.example.myapplication.domain.entities.Comunicado
 import com.example.myapplication.ui.components.EncabezadoConductor
+import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Pantalla de comunicados del colegio: tira de días y lista de avisos.
 @Composable
-fun NotasScreen(
+fun ComunicadosScreen(
     modifier: Modifier = Modifier,
-    onRetroceder: (() -> Unit)? = null,
-    // El ViewModel trae las notas desde la API.
-    viewModel: NotasViewModel = viewModel()
+    onComunicadoClick: () -> Unit = {},
+    // El ViewModel se crea solo; trae los comunicados desde la API.
+    viewModel: ComunicadosViewModel = viewModel()
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        EncabezadoConductor(
-            titulo = "Notas",
-            accionIcono = if (onRetroceder != null) Icons.AutoMirrored.Filled.ArrowBack else null,
-            accionDescripcion = "Volver",
-            onAccion = onRetroceder
-        )
+        EncabezadoConductor(titulo = "Comunicados")
 
         Text(
-            "Segundo bimestre",
+            "Esta semana",
             modifier = Modifier.padding(start = 20.dp, top = 4.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             color = TextPrimary
         )
         Spacer(Modifier.size(12.dp))
+        TiraSemanal()
+        Spacer(Modifier.size(16.dp))
 
+        // Estado de la carga: mensaje mientras pide o si hubo error.
         when {
             viewModel.cargando -> Text(
-                "Cargando notas…",
+                "Cargando comunicados…",
                 modifier = Modifier.padding(20.dp),
                 color = TextSecondary
             )
@@ -82,55 +86,83 @@ fun NotasScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(viewModel.notas, key = { it.id }) { nota ->
-                    TarjetaNota(nota)
+                items(viewModel.comunicados, key = { it.id }) { com ->
+                    TarjetaComunicado(com, onClick = onComunicadoClick)
                 }
             }
         }
     }
 }
 
+// Tira horizontal de los días de la semana; el día tocado se resalta. Es decorativa (no filtra aún).
 @Composable
-private fun TarjetaNota(nota: Nota) {
+private fun TiraSemanal() {
+    // (letra del día, número)
+    val dias = listOf("L" to 23, "M" to 24, "X" to 25, "J" to 26, "V" to 27, "S" to 28, "D" to 29)
+    var seleccion by remember { mutableIntStateOf(25) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        for ((letra, numero) in dias) {
+            val activo = numero == seleccion
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (activo) IndigoPrimary else Color.Transparent)
+                    .clickable { seleccion = numero }
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            ) {
+                Text(letra, color = if (activo) Color.White else TextSecondary, fontSize = 12.sp)
+                Spacer(Modifier.size(6.dp))
+                Text(
+                    numero.toString(),
+                    color = if (activo) Color.White else TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            }
+        }
+    }
+}
+
+// Tarjeta de un comunicado: ícono con su color, título/detalle y fecha. Al tocarla abre el detalle.
+@Composable
+private fun TarjetaComunicado(comunicado: Comunicado, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(nota.color.copy(alpha = 0.15f)),
+                .clip(CircleShape)
+                .background(comunicado.color.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = nota.color)
+            Icon(Icons.Filled.Campaign, contentDescription = null, tint = comunicado.color)
         }
         Spacer(Modifier.size(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(nota.curso, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 15.sp)
-            Text(nota.detalle, color = TextSecondary, fontSize = 13.sp)
+            Text(comunicado.titulo, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 15.sp)
+            Text(comunicado.detalle, color = TextSecondary, fontSize = 13.sp)
         }
-        // Nota en círculo
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(nota.color),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(nota.valor, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        }
+        Text(comunicado.fecha, color = comunicado.color, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun NotasPreview() {
+private fun ComunicadosPreview() {
     MyApplicationTheme {
-        NotasScreen()
+        ComunicadosScreen()
     }
 }

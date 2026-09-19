@@ -34,6 +34,7 @@ import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 import kotlin.random.Random
 
+// Pantalla de escaneo de QR (maqueta): dibuja un visor simulado, sin cámara real todavía.
 @Composable
 fun EscanearQRScreen(
     onRetroceder: () -> Unit,
@@ -94,6 +95,7 @@ fun EscanearQRScreen(
     }
 }
 
+// Dibuja con Canvas un QR de mentira y el marco de enfoque con esquinas. Solo decorativo.
 @Composable
 private fun VisorQR(modifier: Modifier = Modifier) {
     Canvas(modifier = modifier) {

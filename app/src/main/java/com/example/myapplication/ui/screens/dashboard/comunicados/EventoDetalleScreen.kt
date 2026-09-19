@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.comunicados
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +48,7 @@ import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Detalle de un evento escolar (contenido de ejemplo fijo). Se abre al tocar un comunicado.
 @Composable
 fun EventoDetalleScreen(
     onRetroceder: () -> Unit,
@@ -144,6 +145,7 @@ fun EventoDetalleScreen(
     }
 }
 
+// Fila de un dato del evento (ícono + etiqueta + valor): fecha, horario, lugar.
 @Composable
 private fun Detalle(icono: ImageVector, etiqueta: String, valor: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {

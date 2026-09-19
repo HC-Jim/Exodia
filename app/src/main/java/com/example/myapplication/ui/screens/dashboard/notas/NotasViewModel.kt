@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.notas
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -18,20 +18,25 @@ class NotasViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DatosRepository(app)
 
+    // Lista de notas que muestra la pantalla. private set: solo el ViewModel la cambia.
     var notas by mutableStateOf<List<Nota>>(emptyList())
         private set
 
+    // true mientras se consulta la fuente de datos.
     var cargando by mutableStateOf(false)
         private set
 
+    // Texto de error cuando la carga falla; null si todo salió bien.
     var error by mutableStateOf<String?>(null)
         private set
 
+    // Carga las notas al crear el ViewModel.
     init {
         cargar()
     }
 
     fun cargar() {
+        // viewModelScope: la corrutina se cancela sola si se destruye el ViewModel.
         viewModelScope.launch {
             cargando = true
             error = null

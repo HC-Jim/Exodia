@@ -20,18 +20,20 @@ import com.example.myapplication.ui.screens.auth.RecuperarScreen
 import com.example.myapplication.ui.screens.auth.RegistroScreen
 import com.example.myapplication.ui.screens.auth.SplashScreen
 import com.example.myapplication.ui.screens.auth.TwoFactorScreen
-import com.example.myapplication.ui.screens.dashboard.ApoderadoApp
-import com.example.myapplication.ui.screens.dashboard.ConductorApp
+import com.example.myapplication.ui.screens.dashboard._navegacion.ApoderadoApp
+import com.example.myapplication.ui.screens.dashboard._navegacion.ConductorApp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
+// Pantallas por las que pasa la app. La navegación se controla cambiando de fase.
 private enum class FaseApp { SPLASH, LOGIN, REGISTRO, RECUPERAR, DOS_PASOS, CONDUCTOR, ESTUDIANTE }
 
+// Única Activity de la app; todo lo demás son composables de Jetpack Compose.
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge()   // permite dibujar detrás de las barras del sistema
 
-        // Restaura preferencias guardadas
+        // Restaura preferencias guardadas antes de dibujar, para que el tema arranque correcto.
         val prefs = PreferenciasRepository(this)
         val ajustes = kotlinx.coroutines.runBlocking { prefs.leerAjustes() }
         AppSettings.modoOscuro = ajustes.modoOscuro
@@ -48,6 +50,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Raíz de la navegación: según la fase actual, muestra la pantalla correspondiente.
+// Cada pantalla avisa con callbacks (onX) hacia dónde ir, cambiando 'fase'.
 @Composable
 private fun AppRaiz() {
     var fase by remember { mutableStateOf(FaseApp.SPLASH) }

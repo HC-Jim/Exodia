@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.ubicacion
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -58,8 +58,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.example.myapplication.ui.screens.dashboard.alumnos.AlumnosViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.IndigoPrimary
@@ -69,10 +70,8 @@ import com.example.myapplication.ui.theme.TextSecondary
 
 @Composable
 fun RutaActivaScreen(
-    onVerLista: () -> Unit,
     onEscanearQR: () -> Unit,
     modifier: Modifier = Modifier,
-    onContactar: () -> Unit = {},
     viewModel: AlumnosViewModel = viewModel(),
     ubicacionVM: UbicacionViewModel = viewModel()
 ) {
@@ -84,6 +83,11 @@ fun RutaActivaScreen(
     val puntoReferencia = LatLng(-12.020556, -76.957333)
     // Posición del conductor: empieza en el punto de referencia y se actualiza con el GPS.
     var posConductor by remember { mutableStateOf(puntoReferencia) }
+
+    // Estado del marcador del conductor. Se recuerda (evita recrearlo en cada recomposición)
+    // y se re-sincroniza cada vez que cambia posConductor para que el marcador siga al GPS.
+    val estadoMarcadorConductor = rememberMarkerState(position = posConductor)
+    LaunchedEffect(posConductor) { estadoMarcadorConductor.position = posConductor }
 
     // Próximo estudiante a recoger: el pendiente más cercano al conductor.
     val proxima = estudianteMasCercano(viewModel.alumnos, posConductor)
@@ -153,7 +157,7 @@ fun RutaActivaScreen(
                     }
 
                     Marker(
-                        state = MarkerState(position = LatLng(alumno.lat, alumno.lng)),
+                        state = rememberMarkerState(key = alumno.id, position = LatLng(alumno.lat, alumno.lng)),
                         title = alumno.nombre,
                         snippet = alumno.paradero,
                         icon = BitmapDescriptorFactory.defaultMarker(colorMarcador)
@@ -163,7 +167,7 @@ fun RutaActivaScreen(
 
             // 2) El punto actual del conductor (azul).
             Marker(
-                state = MarkerState(position = posConductor),
+                state = estadoMarcadorConductor,
                 title = "Conductor",
                 icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
             )
@@ -186,21 +190,6 @@ fun RutaActivaScreen(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
-                )
-            }
-            Spacer(Modifier.weight(1f))
-            Surface(
-                onClick = onVerLista,
-                shape = RoundedCornerShape(12.dp),
-                color = IndigoPrimary,
-                shadowElevation = 3.dp
-            ) {
-                Text(
-                    "Ver Lista (${viewModel.alumnos.size})",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 13.sp
                 )
             }
         }
@@ -265,15 +254,6 @@ fun RutaActivaScreen(
                         ) {
                             Text("Cancelar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        androidx.compose.material3.OutlinedButton(
-                            onClick = onVerLista, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
-                        ) { Text("Listado", fontSize = 12.sp) }
-                        androidx.compose.material3.OutlinedButton(
-                            onClick = onContactar, modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp)
-                        ) { Text("Contactar", fontSize = 12.sp) }
                     }
 
                     // Diálogo para elegir el motivo de la cancelación.
@@ -340,6 +320,6 @@ private fun estudianteMasCercano(alumnos: List<Alumno>, desde: LatLng): Alumno? 
 @Composable
 private fun RutaActivaPreview() {
     MyApplicationTheme {
-        RutaActivaScreen(onVerLista = {}, onEscanearQR = {})
+        RutaActivaScreen(onEscanearQR = {})
     }
 }

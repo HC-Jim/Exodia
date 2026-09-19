@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.comunicados
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -20,12 +20,15 @@ class ComunicadosViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = DatosRepository(app)
 
+    // Lista que muestra la pantalla.
     var comunicados by mutableStateOf<List<Comunicado>>(emptyList())
         private set
 
+    // true mientras se consulta la fuente de datos.
     var cargando by mutableStateOf(false)
         private set
 
+    // Mensaje de error; null si no hubo problema.
     var error by mutableStateOf<String?>(null)
         private set
 

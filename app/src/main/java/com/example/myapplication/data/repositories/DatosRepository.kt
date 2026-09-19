@@ -3,11 +3,11 @@ package com.example.myapplication.data.repositories
 import android.content.Context
 import com.example.myapplication.data.models.EstadoBody
 import com.example.myapplication.data.models.UbicacionDto
-import com.example.myapplication.data.remote.aAlumnos
-import com.example.myapplication.data.remote.aComunicados
-import com.example.myapplication.data.remote.aDominio
-import com.example.myapplication.data.remote.aNotas
-import com.example.myapplication.data.remote.estadoAsistenciaDe
+import com.example.myapplication.data.models.aAlumnos
+import com.example.myapplication.data.models.aComunicados
+import com.example.myapplication.data.models.aDominio
+import com.example.myapplication.data.models.aNotas
+import com.example.myapplication.data.models.estadoAsistenciaDe
 import com.example.myapplication.domain.entities.Alumno
 import com.example.myapplication.domain.entities.Comunicado
 import com.example.myapplication.domain.entities.EstadoAsistencia
@@ -19,8 +19,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * Repositorio central de datos. Lee y escribe DIRECTO en la API (Retrofit).
- * No usa caché local: SQLite solo se usa para contactos de emergencia y
- * recordatorios (en sus propios repositorios).
  */
 class DatosRepository(context: Context) {
 

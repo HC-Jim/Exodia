@@ -132,6 +132,7 @@ fun AjustesScreen(
     }
 }
 
+// Fila reutilizable de ajuste con ícono, título y un interruptor on/off.
 @Composable
 private fun FilaSwitch(icono: ImageVector, titulo: String, valor: Boolean, onCambio: (Boolean) -> Unit) {
     Row(

@@ -40,13 +40,15 @@ import com.example.myapplication.ui.theme.SanAgustinRed
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Pantalla de verificación en dos pasos (PIN de 6 dígitos). Maqueta del prototipo:
+// las casillas no validan un código real, solo simulan el llenado.
 @Composable
 fun TwoFactorScreen(
     onValidar: () -> Unit,
     onCancelar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Dígitos de ejemplo pre-cargados para el prototipo.
+    // Cuántas casillas del PIN aparecen "llenas". Dígitos de ejemplo pre-cargados.
     var llenos by remember { mutableIntStateOf(4) }
 
     Column(

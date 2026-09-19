@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.asistencias
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +36,7 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
+// Pantalla de asistencia del estudiante: calendario del mes coloreado por estado y su leyenda.
 @Composable
 fun AsistenciasScreen(
     modifier: Modifier = Modifier,
@@ -85,7 +86,7 @@ private fun CalendarioMes(
     dias: Int,
     estados: Map<Int, EstadoAsistencia>
 ) {
-    val cabecera = listOf("D", "L", "M", "M", "J", "V", "S")
+    val cabecera = listOf("D", "L", "M", "M", "J", "V", "S")   // encabezado de días (Dom..Sab)
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -107,13 +108,15 @@ private fun CalendarioMes(
             }
             Spacer(Modifier.size(6.dp))
 
+            // offset = celdas vacías antes del día 1 (para que caiga en su día de la semana).
             val totalCeldas = offset + dias
-            val filas = (totalCeldas + 6) / 7
+            val filas = (totalCeldas + 6) / 7   // redondeo hacia arriba a semanas completas
             var dia = 1
             for (fila in 0 until filas) {
                 Row(Modifier.fillMaxWidth()) {
                     for (col in 0 until 7) {
                         val indice = fila * 7 + col
+                        // Celda vacía antes del día 1 o después del último día del mes.
                         if (indice < offset || dia > dias) {
                             Box(Modifier.weight(1f).aspectRatio(1f))
                         } else {
@@ -127,6 +130,7 @@ private fun CalendarioMes(
     }
 }
 
+// Una celda del calendario: el número del día, con círculo de color si tiene un estado marcado.
 @Composable
 private fun androidx.compose.foundation.layout.RowScope.CeldaDia(dia: Int, estado: EstadoAsistencia?) {
     val color = estado?.color ?: Color.Transparent
@@ -155,6 +159,7 @@ private fun androidx.compose.foundation.layout.RowScope.CeldaDia(dia: Int, estad
     }
 }
 
+// Leyenda que explica el color de cada estado de asistencia, en filas de dos.
 @Composable
 private fun Leyenda() {
     val items = listOf(

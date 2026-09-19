@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.recordatorios
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +53,7 @@ fun RecordatoriosScreen(
     onRetroceder: (() -> Unit)? = null,
     viewModel: RecordatoriosViewModel = viewModel()
 ) {
+    // Campos del formulario para crear un recordatorio nuevo.
     var titulo by remember { mutableStateOf("") }
     var detalle by remember { mutableStateOf("") }
     var fecha by remember { mutableStateOf("") }
@@ -96,6 +97,7 @@ fun RecordatoriosScreen(
             )
             Button(
                 onClick = {
+                    // Guarda en SQLite y limpia el formulario.
                     viewModel.agregar(titulo, detalle, fecha)
                     titulo = ""
                     detalle = ""
@@ -135,6 +137,7 @@ fun RecordatoriosScreen(
     }
 }
 
+// Fila de un recordatorio con su título/detalle/fecha y el botón de borrar.
 @Composable
 private fun FilaRecordatorio(recordatorio: Recordatorio, onBorrar: () -> Unit) {
     Row(

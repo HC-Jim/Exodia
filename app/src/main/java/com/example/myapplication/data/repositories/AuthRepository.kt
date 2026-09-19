@@ -15,30 +15,41 @@ import kotlinx.coroutines.withContext
 class AuthRepository {
 
     private val api = RetrofitCliente.api
-
+// withContext(Dispatchers.IO = ejecutar en segundo plano
     /** Inicia sesión. Lanza excepción si las credenciales son inválidas. */
-    suspend fun login(correo: String, contrasena: String): Usuario = withContext(Dispatchers.IO) {
-        val dto = api.login(LoginBody(correo, contrasena))
-        aDominio(dto)
+    suspend fun login(correo: String, contrasena: String): Usuario {
+        val usuario = withContext(Dispatchers.IO) {
+            val dto = api.login(LoginBody(correo, contrasena))
+            aDominio(dto)          // esto queda guardado en 'usuario'
+        }
+        return usuario             // return explícito al final, como en Java
     }
 
     /** Registra una cuenta nueva. Lanza excepción si el correo ya existe. */
-    suspend fun registrar(usuario: UsuarioDto): Usuario = withContext(Dispatchers.IO) {
-        val dto = api.registrar(usuario)
-        aDominio(dto)
+    suspend fun registrar(usuario: UsuarioDto): Usuario {
+        val creado = withContext(Dispatchers.IO) {
+            val dto = api.registrar(usuario)
+            aDominio(dto)          // queda guardado en 'creado'
+        }
+        return creado              // return explícito al final
     }
 
     /** Devuelve la pregunta de seguridad de un correo (null si no existe). */
-    suspend fun obtenerPregunta(correo: String): String? = withContext(Dispatchers.IO) {
-        api.getPregunta(correo).pregunta
+    suspend fun obtenerPregunta(correo: String): String? {
+        val pregunta = withContext(Dispatchers.IO) {
+            val respuesta = api.getPregunta(correo)
+            respuesta.pregunta     // queda guardado en 'pregunta'
+        }
+        return pregunta            // return explícito al final
     }
 
     /** Restablece la contraseña respondiendo la pregunta de seguridad. */
-    suspend fun restablecer(correo: String, respuesta: String, nuevaContrasena: String) =
+    suspend fun restablecer(correo: String, respuesta: String, nuevaContrasena: String) {
         withContext(Dispatchers.IO) {
-            api.restablecer(RestablecerBody(correo, respuesta, nuevaContrasena))
-            Unit
+            val body = RestablecerBody(correo, respuesta, nuevaContrasena)
+            api.restablecer(body)
         }
+    }
 
     // Convierte el DTO de la API a la entidad de dominio.
     private fun aDominio(dto: UsuarioDto): Usuario {

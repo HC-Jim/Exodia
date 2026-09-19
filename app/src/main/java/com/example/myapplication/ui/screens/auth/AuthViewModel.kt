@@ -18,16 +18,16 @@ class AuthViewModel : ViewModel() {
 
     private val repo = AuthRepository()
 
+    // true mientras hay una llamada de red en curso (deshabilita botones, muestra spinner).
     var cargando by mutableStateOf(false)
         private set
 
+    // Mensaje de error para mostrar en pantalla; null si no hay error.
     var error by mutableStateOf<String?>(null)
         private set
 
     var pregunta by mutableStateOf<String?>(null)   // pregunta de seguridad recuperada
         private set
-
-    fun limpiarError() { error = null }
 
     /** Inicia sesión; si es correcto, llama onExito(). */
     fun login(correo: String, contrasena: String, onExito: () -> Unit) {
@@ -35,6 +35,8 @@ class AuthViewModel : ViewModel() {
             error = "Ingresa tu correo y contraseña"
             return
         }
+        //inicia corrutina
+        // launch (lanza y olvida, no devuelve un resultado) vs async ( devuelve resultado)
         viewModelScope.launch {
             cargando = true
             error = null

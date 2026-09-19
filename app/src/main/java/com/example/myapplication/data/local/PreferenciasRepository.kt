@@ -19,10 +19,8 @@ data class AjustesGuardados(
 
 /**
  * Repositorio de preferencias de apariencia usando DataStore.
- *
- * DataStore es el reemplazo moderno de SharedPreferences: guarda pares
- * clave-valor de forma asíncrona (con corrutinas), por eso los métodos son
- * suspend. Los datos sobreviven aunque se cierre la app.
+
+
  */
 class PreferenciasRepository(private val context: Context) {
 

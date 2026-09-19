@@ -44,10 +44,12 @@ fun RecuperarScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = viewModel()
 ) {
+    // Campos que llena el usuario.
     var correo by remember { mutableStateOf("") }
     var respuesta by remember { mutableStateOf("") }
     var nueva by remember { mutableStateOf("") }
 
+    // Si ya tenemos la pregunta de seguridad, pasamos del paso 1 al paso 2.
     val hayPregunta = viewModel.pregunta != null
 
     Column(

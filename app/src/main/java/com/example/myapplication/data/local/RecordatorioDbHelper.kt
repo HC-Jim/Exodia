@@ -17,6 +17,7 @@ class RecordatorioDbHelper(context: Context) :
         const val TABLA = "recordatorios"
     }
 
+    // Se ejecuta la primera vez que se abre la base de datos.
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
             "CREATE TABLE $TABLA (" +
@@ -27,6 +28,7 @@ class RecordatorioDbHelper(context: Context) :
         )
     }
 
+    // Se ejecuta al subir VERSION_BD (para migraciones). Aquí, recrea la tabla.
     override fun onUpgrade(db: SQLiteDatabase, versionAnterior: Int, versionNueva: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLA")
         onCreate(db)

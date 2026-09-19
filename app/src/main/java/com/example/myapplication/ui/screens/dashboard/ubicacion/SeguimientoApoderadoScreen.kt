@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard.ubicacion
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +55,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.example.myapplication.core.utils.Sesion
 
+// Seguimiento del bus para el apoderado: mapa con el estudiante y el bus, y el estado del recojo.
 @Composable
 fun SeguimientoApoderadoScreen(
     modifier: Modifier = Modifier,
@@ -107,10 +108,12 @@ fun SeguimientoApoderadoScreen(
         } else {
             null
         }
+        // Si no hay punto del estudiante, centra en una zona por defecto.
         val centroInicial = puntoEstudiante ?: LatLng(-12.020556, -76.957333)
         val camara = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(centroInicial, 14f)
         }
+        // Cuando ya conocemos el punto del estudiante, centra el mapa ahí.
         LaunchedEffect(puntoEstudiante) {
             if (puntoEstudiante != null) {
                 camara.position = CameraPosition.fromLatLngZoom(puntoEstudiante, 15f)

@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.dashboard
+package com.example.myapplication.ui.screens.dashboard._navegacion
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.core.utils.Sesion
+import com.example.myapplication.ui.screens.dashboard.alumnos.AlumnosViewModel
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.components.MapaSimulado
 import com.example.myapplication.ui.theme.TextPrimary
@@ -43,6 +44,7 @@ import com.example.myapplication.ui.theme.TextSecondary
 import com.example.myapplication.ui.theme.VioletGradientEnd
 import com.example.myapplication.ui.theme.VioletGradientStart
 
+// Pantalla de inicio del conductor: saludo, vista previa del mapa y botones de iniciar/finalizar ruta.
 @Composable
 fun InicioConductorScreen(
     onIniciarRuta: () -> Unit,
@@ -152,6 +154,7 @@ fun InicioConductorScreen(
     }
 }
 
+// Encabezado con el avatar y el nombre del conductor logueado.
 @Composable
 private fun SaludoConductor() {
     Row(

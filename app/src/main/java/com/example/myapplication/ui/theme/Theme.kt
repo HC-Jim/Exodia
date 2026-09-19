@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import com.example.myapplication.core.utils.AppSettings
 
+// Esquema de colores para el tema claro (roles de Material 3: primary, surface, etc.).
 private val LightColors = lightColorScheme(
     primary = IndigoPrimary,
     onPrimary = SurfaceWhite,
@@ -29,6 +30,7 @@ private val LightColors = lightColorScheme(
     onError = SurfaceWhite
 )
 
+// Esquema de colores para el modo oscuro ("Modo Black").
 private val DarkColors = darkColorScheme(
     primary = IndigoLight,
     onPrimary = SurfaceWhite,
