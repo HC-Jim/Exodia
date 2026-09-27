@@ -1,0 +1,39 @@
+package com.example.myapplication.domain
+
+/**
+ * Entidades de negocio del rol Conductor.
+ * Objetos puros del dominio, independientes de la interfaz y de la fuente de datos.
+ */
+
+/** Estado de entrega de un alumno dentro de la ruta activa. */
+enum class EstadoEntrega {
+    PENDIENTE,
+    ABORDO,
+    ENTREGADO,
+    CANCELADO
+}
+
+/** Estudiante dentro de la ruta del conductor, con su punto de recojo y estado de entrega. */
+data class Alumno(
+    val id: String,
+    val nombre: String,
+    val grado: String,
+    val direccion: String,
+    val paradero: String,
+    val horaEntrega: String? = null,
+    val estado: EstadoEntrega = EstadoEntrega.PENDIENTE,
+    val lat: Double? = null,   // coordenadas del punto de recojo
+    val lng: Double? = null
+)
+
+/** Perfil propio del conductor (datos de su cuenta y del vehículo). */
+data class ConductorPerfil(
+    val nombre: String,
+    val celular: String,
+    val correo: String,
+    val contactoEmergencia: String,
+    val dni: String,
+    val licencia: String,
+    val placa: String,
+    val zona: String
+)

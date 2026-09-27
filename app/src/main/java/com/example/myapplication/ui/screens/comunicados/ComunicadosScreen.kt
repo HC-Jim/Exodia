@@ -1,0 +1,169 @@
+package com.example.myapplication.ui.screens.comunicados
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Campaign
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.domain.Comunicado
+import com.example.myapplication.ui.components.EncabezadoConductor
+import com.example.myapplication.ui.theme.IndigoPrimary
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.TextPrimary
+import com.example.myapplication.ui.theme.TextSecondary
+
+// Pantalla de comunicados del colegio: tira de días y lista de avisos.
+@Composable
+fun ComunicadosScreen(
+    modifier: Modifier = Modifier,
+    onComunicadoClick: () -> Unit = {},
+    // El ViewModel se crea solo; trae los comunicados desde la API.
+    viewModel: ComunicadosViewModel = viewModel()
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        EncabezadoConductor(titulo = "Comunicados")
+
+        Text(
+            "Esta semana",
+            modifier = Modifier.padding(start = 20.dp, top = 4.dp),
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = TextPrimary
+        )
+        Spacer(Modifier.size(12.dp))
+        TiraSemanal()
+        Spacer(Modifier.size(16.dp))
+
+        // Estado de la carga: mensaje mientras pide o si hubo error.
+        when {
+            viewModel.cargando -> Text(
+                "Cargando comunicados…",
+                modifier = Modifier.padding(20.dp),
+                color = TextSecondary
+            )
+            viewModel.error != null -> Text(
+                viewModel.error!!,
+                modifier = Modifier.padding(20.dp),
+                color = Color(0xFFEF4444)
+            )
+            else -> LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    start = 16.dp, end = 16.dp, bottom = 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(viewModel.comunicados, key = { it.id }) { com ->
+                    TarjetaComunicado(com, onClick = onComunicadoClick)
+                }
+            }
+        }
+    }
+}
+
+// Tira horizontal de los días de la semana; el día tocado se resalta. Es decorativa (no filtra aún).
+@Composable
+private fun TiraSemanal() {
+    // (letra del día, número)
+    val dias = listOf("L" to 23, "M" to 24, "X" to 25, "J" to 26, "V" to 27, "S" to 28, "D" to 29)
+    var seleccion by remember { mutableIntStateOf(25) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        for ((letra, numero) in dias) {
+            val activo = numero == seleccion
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (activo) IndigoPrimary else Color.Transparent)
+                    .clickable { seleccion = numero }
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            ) {
+                Text(letra, color = if (activo) Color.White else TextSecondary, fontSize = 12.sp)
+                Spacer(Modifier.size(6.dp))
+                Text(
+                    numero.toString(),
+                    color = if (activo) Color.White else TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
+            }
+        }
+    }
+}
+
+// Tarjeta de un comunicado: ícono, título/detalle y fecha. Al tocarla abre el detalle.
+@Composable
+private fun TarjetaComunicado(comunicado: Comunicado, onClick: () -> Unit = {}) {
+    val color = MaterialTheme.colorScheme.primary   // color del tema (antes venía en el modelo)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(color.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Filled.Campaign, contentDescription = null, tint = color)
+        }
+        Spacer(Modifier.size(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(comunicado.titulo, fontWeight = FontWeight.SemiBold, color = TextPrimary, fontSize = 15.sp)
+            Text(comunicado.detalle ?: "", color = TextSecondary, fontSize = 13.sp)
+        }
+        Text(comunicado.fecha ?: "", color = color, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun ComunicadosPreview() {
+    MyApplicationTheme {
+        ComunicadosScreen()
+    }
+}

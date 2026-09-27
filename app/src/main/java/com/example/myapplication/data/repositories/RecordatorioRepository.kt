@@ -3,7 +3,7 @@ package com.example.myapplication.data.repositories
 import android.content.ContentValues
 import android.content.Context
 import com.example.myapplication.data.local.RecordatorioDbHelper
-import com.example.myapplication.domain.entities.Recordatorio
+import com.example.myapplication.domain.Recordatorio
 
 /**
  * Repositorio de recordatorios personales (patrón Repository sobre SQLite).

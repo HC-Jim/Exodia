@@ -37,8 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.core.utils.Sesion
-import com.example.myapplication.domain.entities.ConductorPerfil
+import com.example.myapplication.utils.Sesion
+import com.example.myapplication.domain.ConductorPerfil
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.theme.DangerRed

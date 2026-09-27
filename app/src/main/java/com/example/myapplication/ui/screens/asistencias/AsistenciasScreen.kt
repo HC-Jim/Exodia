@@ -1,0 +1,209 @@
+package com.example.myapplication.ui.screens.asistencias
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.domain.EstadoAsistencia
+import com.example.myapplication.ui.components.EncabezadoConductor
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.TextPrimary
+import com.example.myapplication.ui.theme.TextSecondary
+
+// Pantalla de asistencia del estudiante: calendario del mes coloreado por estado y su leyenda.
+@Composable
+fun AsistenciasScreen(
+    modifier: Modifier = Modifier,
+    onRetroceder: (() -> Unit)? = null,
+    viewModel: AsistenciasViewModel = viewModel()
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        EncabezadoConductor(
+            titulo = "Asistencias",
+            accionIcono = if (onRetroceder != null) Icons.AutoMirrored.Filled.ArrowBack else null,
+            accionDescripcion = "Volver",
+            onAccion = onRetroceder
+        )
+
+        Text(
+            viewModel.nombreMes,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = TextPrimary
+        )
+        Spacer(Modifier.size(16.dp))
+
+        CalendarioMes(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            offset = viewModel.offsetPrimerDia,
+            dias = viewModel.diasDelMes,
+            estados = viewModel.asistencia
+        )
+
+        Spacer(Modifier.size(20.dp))
+        Leyenda()
+    }
+}
+
+@Composable
+private fun CalendarioMes(
+    modifier: Modifier = Modifier,
+    offset: Int,
+    dias: Int,
+    estados: Map<Int, EstadoAsistencia>
+) {
+    val cabecera = listOf("D", "L", "M", "M", "J", "V", "S")   // encabezado de días (Dom..Sab)
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(Modifier.padding(12.dp)) {
+            Row(Modifier.fillMaxWidth()) {
+                for (d in cabecera) {
+                    Text(
+                        d,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+            Spacer(Modifier.size(6.dp))
+
+            // offset = celdas vacías antes del día 1 (para que caiga en su día de la semana).
+            val totalCeldas = offset + dias
+            val filas = (totalCeldas + 6) / 7   // redondeo hacia arriba a semanas completas
+            var dia = 1
+            for (fila in 0 until filas) {
+                Row(Modifier.fillMaxWidth()) {
+                    for (col in 0 until 7) {
+                        val indice = fila * 7 + col
+                        // Celda vacía antes del día 1 o después del último día del mes.
+                        if (indice < offset || dia > dias) {
+                            Box(Modifier.weight(1f).aspectRatio(1f))
+                        } else {
+                            CeldaDia(dia, estados[dia])
+                            dia++
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Una celda del calendario: el número del día, con círculo de color si tiene un estado marcado.
+@Composable
+private fun androidx.compose.foundation.layout.RowScope.CeldaDia(dia: Int, estado: EstadoAsistencia?) {
+    val color = estado?.color ?: Color.Transparent
+    val esMarcado = estado != null && estado != EstadoAsistencia.SIN_CLASE
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .aspectRatio(1f)
+            .padding(3.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(if (esMarcado) color.copy(alpha = 0.18f) else Color.Transparent),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                dia.toString(),
+                color = if (esMarcado) color else TextPrimary,
+                fontWeight = if (esMarcado) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+// Leyenda que explica el color de cada estado de asistencia, en filas de dos.
+@Composable
+private fun Leyenda() {
+    val items = listOf(
+        EstadoAsistencia.PRESENTE,
+        EstadoAsistencia.TARDANZA,
+        EstadoAsistencia.FALTA,
+        EstadoAsistencia.JUSTIFICADO
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Recorre la lista de 2 en 2 para armar filas de 2 elementos.
+        var indice = 0
+        while (indice < items.size) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                for (col in 0 until 2) {
+                    val pos = indice + col
+                    if (pos < items.size) {
+                        val estado = items[pos]
+                        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                Modifier
+                                    .size(14.dp)
+                                    .clip(CircleShape)
+                                    .background(estado.color)
+                            )
+                            Spacer(Modifier.size(8.dp))
+                            Text(estado.etiqueta, color = TextSecondary, fontSize = 13.sp)
+                        }
+                    }
+                }
+            }
+            indice = indice + 2
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun AsistenciasPreview() {
+    MyApplicationTheme {
+        AsistenciasScreen()
+    }
+}

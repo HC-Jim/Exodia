@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import com.example.myapplication.data.repositories.ContactoRepository
-import com.example.myapplication.domain.entities.ContactoEmergencia
+import com.example.myapplication.domain.ContactoEmergencia
 
 /**
  * ViewModel de contactos de emergencia (SQLite vía ContactoRepository).

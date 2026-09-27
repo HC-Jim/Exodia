@@ -2,18 +2,12 @@ package com.example.myapplication.data.repositories
 
 import android.content.Context
 import com.example.myapplication.data.models.EstadoBody
-import com.example.myapplication.data.models.UbicacionDto
-import com.example.myapplication.data.models.aAlumnos
-import com.example.myapplication.data.models.aComunicados
-import com.example.myapplication.data.models.aDominio
-import com.example.myapplication.data.models.aNotas
-import com.example.myapplication.data.models.estadoAsistenciaDe
-import com.example.myapplication.domain.entities.Alumno
-import com.example.myapplication.domain.entities.Comunicado
-import com.example.myapplication.domain.entities.EstadoAsistencia
-import com.example.myapplication.domain.entities.Nota
-import com.example.myapplication.domain.entities.Ubicacion
-import com.example.myapplication.services.api.RetrofitCliente
+import com.example.myapplication.domain.Alumno
+import com.example.myapplication.domain.CalendarioAsistencia
+import com.example.myapplication.domain.Comunicado
+import com.example.myapplication.domain.Nota
+import com.example.myapplication.domain.Ubicacion
+import com.example.myapplication.data.remote.RetrofitCliente
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -28,11 +22,11 @@ class DatosRepository(context: Context) {
     //  Lecturas del rol Apoderado/Estudiante
     // ==========================================================
     suspend fun obtenerComunicados(): List<Comunicado> = withContext(Dispatchers.IO) {
-        api.getComunicados().aComunicados()
+        api.getComunicados()   // directo del servidor (Gson lo llena)
     }
 
     suspend fun obtenerNotas(): List<Nota> = withContext(Dispatchers.IO) {
-        api.getNotas().aNotas()
+        api.getNotas()         // directo del servidor
     }
 
     // ==========================================================
@@ -41,7 +35,7 @@ class DatosRepository(context: Context) {
     /** Lista de estudiantes que el conductor debe recoger. */
     suspend fun obtenerEstudiantes(movilidad: String): List<Alumno> = withContext(Dispatchers.IO) {
         try {
-            api.getEstudiantes(movilidad).aAlumnos()
+            api.getEstudiantes(movilidad)   // el servidor ya devuelve la forma "alumno"
         } catch (e: Exception) {
             emptyList()
         }
@@ -77,13 +71,10 @@ class DatosRepository(context: Context) {
         }
     }
 
-    /** Reinicia la ruta: todos los estudiantes de la movilidad vuelven a PENDIENTE. */
+    /** Reinicia la ruta: el servidor pone a todos los estudiantes en PENDIENTE (una sola llamada). */
     suspend fun reiniciarRuta(movilidad: String) = withContext(Dispatchers.IO) {
         try {
-            val estudiantes = api.getEstudiantes(movilidad)
-            for (e in estudiantes) {
-                api.actualizarEstadoUsuario(e.id, EstadoBody("PENDIENTE"))
-            }
+            api.reiniciarRuta(movilidad)
         } catch (e: Exception) {
             // sin conexión: no se reinicia
         }
@@ -93,16 +84,12 @@ class DatosRepository(context: Context) {
     // ==========================================================
     //  Asistencias
     // ==========================================================
-    suspend fun obtenerAsistencias(usuarioId: Long): Map<Int, EstadoAsistencia> = withContext(Dispatchers.IO) {
+    /** Calendario de asistencia del mes (lo arma el servidor; la app lo consume directo). */
+    suspend fun obtenerAsistencias(usuarioId: Long): CalendarioAsistencia? = withContext(Dispatchers.IO) {
         try {
-            val dtos = api.getAsistencias(usuarioId)
-            val mapa = mutableMapOf<Int, EstadoAsistencia>()
-            for (d in dtos) {
-                mapa[d.dia] = estadoAsistenciaDe(d.estado)
-            }
-            mapa
+            api.getAsistencias(usuarioId)
         } catch (e: Exception) {
-            emptyMap()
+            null
         }
     }
 
@@ -111,7 +98,7 @@ class DatosRepository(context: Context) {
     // ==========================================================
     suspend fun obtenerUbicacion(movilidad: String): Ubicacion? = withContext(Dispatchers.IO) {
         try {
-            api.getUbicacion(movilidad).aDominio()
+            api.getUbicacion(movilidad)   // directo del servidor
         } catch (e: Exception) {
             null
         }
@@ -119,7 +106,7 @@ class DatosRepository(context: Context) {
 
     suspend fun enviarUbicacion(movilidad: String, lat: Double, lng: Double) = withContext(Dispatchers.IO) {
         try {
-            api.enviarUbicacion(movilidad, UbicacionDto(lat = lat, lng = lng))
+            api.enviarUbicacion(movilidad, Ubicacion(lat = lat, lng = lng))
         } catch (e: Exception) {
             // sin conexión: se reintenta en el próximo envío
         }

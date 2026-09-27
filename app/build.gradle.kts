@@ -81,6 +81,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     // --- Utilidades de mapas (decodificar la ruta de Directions) ---
     implementation(libs.maps.utils)
+    // --- Escáner de código QR (cámara) ---
+    implementation(libs.zxing.android.embedded)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Ubicación del conductor para el seguimiento en el mapa -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Cámara para escanear el QR del estudiante -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="true"

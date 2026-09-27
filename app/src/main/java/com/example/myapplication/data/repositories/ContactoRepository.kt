@@ -3,7 +3,7 @@ package com.example.myapplication.data.repositories
 import android.content.ContentValues
 import android.content.Context
 import com.example.myapplication.data.local.ContactoDbHelper
-import com.example.myapplication.domain.entities.ContactoEmergencia
+import com.example.myapplication.domain.ContactoEmergencia
 
 /**
  * Repositorio de contactos de emergencia (patron Repository sobre SQLite).

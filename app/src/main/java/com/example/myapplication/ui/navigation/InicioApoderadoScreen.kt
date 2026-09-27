@@ -1,0 +1,178 @@
+package com.example.myapplication.ui.navigation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Celebration
+import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.FactCheck
+import androidx.compose.material.icons.filled.Grade
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.myapplication.utils.Sesion
+import com.example.myapplication.ui.components.InicialesAvatar
+import com.example.myapplication.ui.components.MenuDesplegable
+import com.example.myapplication.ui.components.OpcionMenu
+import com.example.myapplication.ui.theme.IndigoPrimary
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.ui.theme.TextPrimary
+import com.example.myapplication.ui.theme.TextSecondary
+
+// Pantalla de inicio del apoderado: saludo, ficha del estudiante y accesos a las secciones.
+@Composable
+fun InicioApoderadoScreen(
+    onColegio: () -> Unit,
+    onCalendario: () -> Unit,
+    onAsistencias: () -> Unit,
+    modifier: Modifier = Modifier,
+    onNotas: () -> Unit = {},
+    onEventos: () -> Unit = {},
+    onRecordatorios: () -> Unit = {}
+) {
+    // Un solo estudiante por usuario: se toma de la sesión.
+    val usuario = Sesion.usuario
+
+    // Opciones del menú hamburguesa (arriba a la izquierda).
+    val opcionesMenu = listOf(
+        OpcionMenu("Colegio", Icons.Filled.School, onColegio),
+        OpcionMenu("Calendario", Icons.Filled.CalendarMonth, onCalendario),
+        OpcionMenu("Asistencias", Icons.Filled.FactCheck, onAsistencias),
+        OpcionMenu("Notas", Icons.Filled.Grade, onNotas),
+        OpcionMenu("Eventos", Icons.Filled.Celebration, onEventos)
+    )
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // Menú desplegable + saludo + logo
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 20.dp, top = 12.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MenuDesplegable(opciones = opcionesMenu)
+            Spacer(Modifier.size(4.dp))
+            InicialesAvatar(nombre = usuario?.estudianteNombre ?: "Estudiante", tamano = 46.dp)
+            Spacer(Modifier.size(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text("¡Hola!", color = TextSecondary, fontSize = 13.sp)
+                Text(
+                    usuario?.estudianteNombre ?: "Estudiante",
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(IndigoPrimary),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("IE", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            }
+        }
+
+        // Tarjeta del estudiante único del usuario.
+        if (usuario?.estudianteNombre != null) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(IndigoPrimary)
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                InicialesAvatar(nombre = usuario.estudianteNombre, tamano = 40.dp)
+                Spacer(Modifier.size(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(usuario.estudianteNombre, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    if (usuario.estudianteGrado != null) {
+                        Text(usuario.estudianteGrado, color = Color.White.copy(alpha = 0.85f), fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+
+        // Menú principal
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            BotonMenu("Colegio", Icons.Filled.School, onColegio)
+            BotonMenu("Asistencias", Icons.Filled.FactCheck, onAsistencias)
+            BotonMenu("Recordatorios", Icons.Filled.EditNote, onRecordatorios)
+        }
+    }
+}
+
+// Botón grande de acceso a una sección (ícono + texto + flecha).
+@Composable
+private fun BotonMenu(texto: String, icono: ImageVector, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = IndigoPrimary,
+        shadowElevation = 3.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color.White.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icono, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+            }
+            Spacer(Modifier.size(14.dp))
+            Text(texto, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, modifier = Modifier.weight(1f))
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.White)
+        }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun InicioApoderadoPreview() {
+    MyApplicationTheme {
+        InicioApoderadoScreen(onColegio = {}, onCalendario = {}, onAsistencias = {})
+    }
+}

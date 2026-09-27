@@ -3,7 +3,7 @@ package com.example.myapplication.ui.screens.profile
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.core.utils.AppSettings
+import com.example.myapplication.utils.AppSettings
 import com.example.myapplication.data.local.PreferenciasRepository
 import kotlinx.coroutines.launch
 

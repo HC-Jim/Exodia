@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.core.utils.Sesion
+import com.example.myapplication.utils.Sesion
 import com.example.myapplication.data.models.UsuarioDto
 import com.example.myapplication.data.repositories.AuthRepository
 import kotlinx.coroutines.launch

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import com.example.myapplication.core.utils.AppSettings
+import com.example.myapplication.utils.AppSettings
 
 // Esquema de colores para el tema claro (roles de Material 3: primary, surface, etc.).
 private val LightColors = lightColorScheme(

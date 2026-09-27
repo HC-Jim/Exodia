@@ -12,16 +12,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.myapplication.core.utils.AppSettings
-import com.example.myapplication.core.utils.Sesion
+import com.example.myapplication.utils.AppSettings
+import com.example.myapplication.utils.Sesion
 import com.example.myapplication.data.local.PreferenciasRepository
 import com.example.myapplication.ui.screens.auth.LoginScreen
 import com.example.myapplication.ui.screens.auth.RecuperarScreen
 import com.example.myapplication.ui.screens.auth.RegistroScreen
 import com.example.myapplication.ui.screens.auth.SplashScreen
 import com.example.myapplication.ui.screens.auth.TwoFactorScreen
-import com.example.myapplication.ui.screens.dashboard._navegacion.ApoderadoApp
-import com.example.myapplication.ui.screens.dashboard._navegacion.ConductorApp
+import com.example.myapplication.ui.navigation.ApoderadoApp
+import com.example.myapplication.ui.navigation.ConductorApp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 // Pantallas por las que pasa la app. La navegación se controla cambiando de fase.

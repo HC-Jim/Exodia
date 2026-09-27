@@ -37,7 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.core.utils.AppSettings
+import com.example.myapplication.utils.AppSettings
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.IndigoPrimary
