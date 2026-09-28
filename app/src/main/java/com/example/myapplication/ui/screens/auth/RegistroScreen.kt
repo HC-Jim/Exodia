@@ -41,7 +41,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.myapplication.data.models.UsuarioDto
+import com.example.myapplication.domain.Usuario
 import com.example.myapplication.ui.theme.SuccessGreen
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -150,20 +150,20 @@ fun RegistroScreen(
         Button(
             onClick = {
                 // Junta todos los campos en un DTO y lo manda al ViewModel para registrar.
-                val dto = UsuarioDto(
+                val nuevo = Usuario(
                     nombre = nombre,
                     correo = correo,
+                    rol = "ESTUDIANTE",
                     contrasena = contrasena,
                     pregunta = pregunta,
                     respuesta = respuesta,
-                    rol = "ESTUDIANTE",
                     estudianteNombre = estudiante,
                     estudianteGrado = grado,
                     movilidad = movilidad.ifBlank { null },
                     lat = latitud.toDoubleOrNull(),
                     lng = longitud.toDoubleOrNull()
                 )
-                viewModel.registrar(dto) { onRegistrado() }
+                viewModel.registrar(nuevo) { onRegistrado() }
             },
             enabled = !viewModel.cargando,
             modifier = Modifier.fillMaxWidth().height(52.dp),

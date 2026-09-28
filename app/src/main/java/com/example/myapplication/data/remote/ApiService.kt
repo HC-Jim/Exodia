@@ -6,7 +6,6 @@ import com.example.myapplication.data.models.MensajeRespuesta
 import com.example.myapplication.data.models.PreguntaRespuesta
 import com.example.myapplication.data.models.ReinicioRespuesta
 import com.example.myapplication.data.models.RestablecerBody
-import com.example.myapplication.data.models.UsuarioDto
 import com.example.myapplication.domain.Alumno
 import com.example.myapplication.domain.CalendarioAsistencia
 import com.example.myapplication.domain.Comunicado
@@ -34,10 +33,10 @@ interface ApiService {
     suspend fun getNotas(): List<Nota>
 
     // ---------- USUARIOS (autenticación) ----------
-    // El cuerpo del registro lleva contraseña (UsuarioDto); la respuesta ya es el
-    // usuario limpio (Usuario), que la app consume directo.
+    // El cuerpo del registro es un Usuario con las credenciales (solo de ida); la
+    // respuesta es el usuario limpio (sin credenciales), que la app consume directo.
     @POST("usuarios/registrar")
-    suspend fun registrar(@Body usuario: UsuarioDto): Usuario
+    suspend fun registrar(@Body usuario: Usuario): Usuario
 
     @POST("usuarios/login")
     suspend fun login(@Body body: LoginBody): Usuario
@@ -60,7 +59,7 @@ interface ApiService {
     suspend fun getUsuario(@Path("id") id: Long): Usuario
 
     @PUT("usuarios/{id}/estado")
-    suspend fun actualizarEstadoUsuario(@Path("id") id: Long, @Body body: EstadoBody): UsuarioDto
+    suspend fun actualizarEstadoUsuario(@Path("id") id: Long, @Body body: EstadoBody): Usuario
 
     // ---------- ASISTENCIAS ----------
     // El servidor devuelve el calendario del mes ya armado (día -> estado).

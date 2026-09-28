@@ -5,8 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /**
- * SQLiteOpenHelper crea/actualiza la base de datos del dispositivo.
- * Aquí definimos la tabla "contactos" (contactos de emergencia del apoderado).
+crea la tabla contactos
  */
 class ContactoDbHelper(context: Context) :
     SQLiteOpenHelper(context, NOMBRE_BD, null, VERSION_BD) {

@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 
-// Crea UN solo DataStore llamado "ajustes" para toda la app.
+// TODA la lógica de DataStore (ajustes)
 private val Context.dataStore by preferencesDataStore(name = "ajustes")
 
 /** Datos de apariencia leídos de una sola vez (para restaurar al iniciar). */
@@ -19,8 +19,6 @@ data class AjustesGuardados(
 
 /**
  * Repositorio de preferencias de apariencia usando DataStore.
-
-
  */
 class PreferenciasRepository(private val context: Context) {
 

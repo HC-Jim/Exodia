@@ -2,7 +2,6 @@ package com.example.myapplication.data.repositories
 
 import com.example.myapplication.data.models.LoginBody
 import com.example.myapplication.data.models.RestablecerBody
-import com.example.myapplication.data.models.UsuarioDto
 import com.example.myapplication.domain.Usuario
 import com.example.myapplication.data.remote.RetrofitCliente
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +22,7 @@ class AuthRepository {
     }
 
     /** Registra una cuenta nueva. Lanza excepción si el correo ya existe. */
-    suspend fun registrar(usuario: UsuarioDto): Usuario = withContext(Dispatchers.IO) {
+    suspend fun registrar(usuario: Usuario): Usuario = withContext(Dispatchers.IO) {
         api.registrar(usuario)
     }
 

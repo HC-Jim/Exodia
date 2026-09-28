@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.utils.Sesion
-import com.example.myapplication.data.models.UsuarioDto
+import com.example.myapplication.domain.Usuario
 import com.example.myapplication.data.repositories.AuthRepository
 import kotlinx.coroutines.launch
 
@@ -52,8 +52,8 @@ class AuthViewModel : ViewModel() {
     }
 
     /** Registra una cuenta; si es correcto, llama onExito(). */
-    fun registrar(usuario: UsuarioDto, onExito: () -> Unit) {
-        if (usuario.nombre.isNullOrBlank() || usuario.correo.isNullOrBlank() || usuario.contrasena.isNullOrBlank()) {
+    fun registrar(usuario: Usuario, onExito: () -> Unit) {
+        if (usuario.nombre.isBlank() || usuario.correo.isBlank() || usuario.contrasena.isNullOrBlank()) {
             error = "Completa nombre, correo y contraseña"
             return
         }

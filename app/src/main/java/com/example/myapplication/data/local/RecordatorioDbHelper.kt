@@ -5,8 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 /**
- * Base de datos SQLite de los recordatorios personales.
- * Es un CRUD 100% local (no depende de la API).
+crea la tabla recordatorios
  */
 class RecordatorioDbHelper(context: Context) :
     SQLiteOpenHelper(context, NOMBRE_BD, null, VERSION_BD) {

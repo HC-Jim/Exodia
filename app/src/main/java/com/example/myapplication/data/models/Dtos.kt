@@ -1,39 +1,8 @@
 package com.example.myapplication.data.models
 
 /**
- * Cuerpos de petición (lo que la app ENVÍA a la API). No hay conversiones ni
- * @SerializedName: el backend usa los mismos nombres (camelCase) que la app.
- *
- * Las RESPUESTAS del servidor se consumen directo en las entidades de `domain`
- * (Usuario, Alumno, Comunicado, Nota, Ubicacion, CalendarioAsistencia).
- */
 
-/**
- * Datos que la app envía al registrar una cuenta. Lleva contraseña y pregunta/respuesta
- * de seguridad, que la entidad Usuario (de dominio) no tiene.
  */
-data class UsuarioDto(
-    val id: Long = 0,
-    val nombre: String? = null,
-    val correo: String? = null,
-    val contrasena: String? = null,
-    val pregunta: String? = null,
-    val respuesta: String? = null,
-    val rol: String? = null,
-    val estudianteNombre: String? = null,
-    val estudianteGrado: String? = null,
-    val movilidad: String? = null,
-    val lat: Double? = null,
-    val lng: Double? = null,
-    // Datos del perfil del conductor
-    val celular: String? = null,
-    val contactoEmergencia: String? = null,
-    val dni: String? = null,
-    val licencia: String? = null,
-    val placa: String? = null,
-    val zona: String? = null,
-    val estado: String? = null   // estado de recojo del estudiante
-)
 
 /** Cuerpo del login. */
 data class LoginBody(val correo: String, val contrasena: String)

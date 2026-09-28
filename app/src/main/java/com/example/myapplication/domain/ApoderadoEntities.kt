@@ -11,7 +11,6 @@ import com.example.myapplication.ui.theme.WarningAmber
 
 /**
  * Aviso o comunicado del colegio.
- * Este modelo lo llena Gson directamente con el JSON del servidor (sin conversión).
  */
 data class Comunicado(
     val id: Long = 0,
@@ -22,7 +21,6 @@ data class Comunicado(
 
 /**
  * Calificación de un curso (valor es el número mostrado).
- * También lo llena Gson directo del servidor.
  */
 data class Nota(
     val id: Long = 0,
@@ -42,8 +40,6 @@ enum class EstadoAsistencia(val etiqueta: String, val color: Color) {
 
 /**
  * Calendario de asistencia de un mes, tal como lo arma el servidor.
- * La app solo lo muestra: el nombre del mes, cuántos días tiene, en qué día de la
- * semana empieza (offset) y el estado de cada día.
  */
 data class CalendarioAsistencia(
     val mes: String,

@@ -1,9 +1,5 @@
 package com.example.myapplication.domain
 
-/**
- * Entidades de negocio del rol Conductor.
- * Objetos puros del dominio, independientes de la interfaz y de la fuente de datos.
- */
 
 /** Estado de entrega de un alumno dentro de la ruta activa. */
 enum class EstadoEntrega {
