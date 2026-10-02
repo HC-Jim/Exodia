@@ -3,6 +3,7 @@ package com.example.myapplication.ui.screens.auth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,8 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -24,13 +31,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.ui.components.EscudoColegio
-import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.AccentBlue
+import com.example.myapplication.ui.theme.DangerRed
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.SanAgustinRed
 import com.example.myapplication.ui.theme.TextSecondary
@@ -47,6 +57,8 @@ fun LoginScreen(
     // Lo que el usuario escribe en los campos (estado local de la pantalla).
     var usuario by remember { mutableStateOf("") }
     var clave by remember { mutableStateOf("") }
+    // Controla si la contraseña se muestra o se oculta.
+    var verClave by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -68,7 +80,8 @@ fun LoginScreen(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             placeholder = { Text("usuario@colegio.edu.pe") },
-            label = { Text("Usuario") }
+            label = { Text("Usuario") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
         Spacer(Modifier.height(14.dp))
         OutlinedTextField(
@@ -78,7 +91,18 @@ fun LoginScreen(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             placeholder = { Text("contraseña") },
-            label = { Text("Contraseña") }
+            label = { Text("Contraseña") },
+            // Muestra puntos en lugar del texto, salvo que se pulse el ojo.
+            visualTransformation = if (verClave) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                IconButton(onClick = { verClave = !verClave }) {
+                    Icon(
+                        imageVector = if (verClave) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (verClave) "Ocultar contraseña" else "Mostrar contraseña"
+                    )
+                }
+            }
         )
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -108,7 +132,7 @@ fun LoginScreen(
         Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("¿No tienes cuenta? ", color = TextSecondary, fontSize = 13.sp)
-            TextButton(onClick = onRegistrar, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
+            TextButton(onClick = onRegistrar, contentPadding = PaddingValues(0.dp)) {
                 Text("Regístrate", color = AccentBlue, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             }
         }

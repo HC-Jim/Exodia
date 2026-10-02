@@ -2,7 +2,6 @@ package com.example.myapplication.domain
 
 /**
  * Usuario de la app. Cada usuario tiene UN solo estudiante asociado.
- *
  * Las credenciales (contrasena, pregunta, respuesta) se usan al enviar el registro
  * y también las devuelve el servidor (proyecto universitario: se prioriza la
  * simplicidad; en una app real no se devolverían).
