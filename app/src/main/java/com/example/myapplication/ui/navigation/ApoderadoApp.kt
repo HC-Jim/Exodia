@@ -4,19 +4,13 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -25,10 +19,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.myapplication.ui.components.BarraInferiorApoderado
 import com.example.myapplication.ui.screens.asistencias.AsistenciasScreen
 import com.example.myapplication.ui.screens.comunicados.ComunicadosScreen
 import com.example.myapplication.ui.screens.comunicados.EventoDetalleScreen
@@ -38,9 +30,6 @@ import com.example.myapplication.ui.screens.ubicacion.SeguimientoApoderadoScreen
 import com.example.myapplication.ui.screens.profile.AjustesScreen
 import com.example.myapplication.ui.screens.profile.ConfiguracionApoderadoScreen
 import com.example.myapplication.ui.screens.profile.PerfilAlumnoScreen
-import com.example.myapplication.ui.theme.IndigoPrimary
-import com.example.myapplication.ui.theme.SurfaceMuted
-import com.example.myapplication.ui.theme.TextSecondary
 
 // ============================================================
 //  Navegación del apoderado (pestañas + pila de overlays)
@@ -127,10 +116,7 @@ fun ApoderadoApp(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         bottomBar = {
-            if (overlay == null) BarraInferior(
-                seleccionado = nav.tab,
-                onSelect = { nav.seleccionarTab(it) }
-            )
+            if (overlay == null) BarraInferiorApoderado(nav.tab) { nav.seleccionarTab(it) }
         }
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
@@ -176,26 +162,3 @@ fun ApoderadoApp(
     }
 }
 
-// Barra de navegación inferior del apoderado, una entrada por cada pestaña.
-@Composable
-private fun BarraInferior(seleccionado: TabApoderado, onSelect: (TabApoderado) -> Unit) {
-    NavigationBar(containerColor = Color.White, tonalElevation = 0.dp) {
-        for (destino in TabApoderado.entries) {
-            NavigationBarItem(
-                selected = destino == seleccionado,
-                onClick = { onSelect(destino) },
-                icon = {
-                    Icon(destino.icono, contentDescription = destino.etiqueta, modifier = Modifier.size(24.dp))
-                },
-                label = { Text(destino.etiqueta, fontSize = 11.sp) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = IndigoPrimary,
-                    selectedTextColor = IndigoPrimary,
-                    unselectedIconColor = TextSecondary,
-                    unselectedTextColor = TextSecondary,
-                    indicatorColor = SurfaceMuted
-                )
-            )
-        }
-    }
-}

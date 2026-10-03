@@ -135,9 +135,14 @@ fun InicioConductorScreen(
 
         Spacer(Modifier.weight(1f))
 
-        // Botón "Finaliza Ruta"
+        // Botón "Finaliza Ruta": reinicia la ruta y se queda en Inicio (no va a Perfil).
+        val contexto = androidx.compose.ui.platform.LocalContext.current
         Button(
-            onClick = onFinalizarRuta,
+            onClick = {
+                viewModel.reiniciarRuta()
+                android.widget.Toast.makeText(contexto, "Ruta finalizada", android.widget.Toast.LENGTH_SHORT).show()
+                onFinalizarRuta()
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),

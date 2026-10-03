@@ -2,6 +2,7 @@ package com.example.myapplication.data.remote
 
 import com.example.myapplication.data.models.EstadoBody
 import com.example.myapplication.data.models.LoginBody
+import com.example.myapplication.data.models.PerfilBody
 import com.example.myapplication.data.models.MensajeRespuesta
 import com.example.myapplication.data.models.PreguntaRespuesta
 import com.example.myapplication.data.models.ReinicioRespuesta
@@ -60,6 +61,10 @@ interface ApiService {
 
     @PUT("usuarios/{id}/estado")
     suspend fun actualizarEstadoUsuario(@Path("id") id: Long, @Body body: EstadoBody): Usuario
+
+    // Actualiza los datos personales del perfil (nombre, celular, correo, direccion).
+    @PUT("usuarios/{id}")
+    suspend fun actualizarUsuario(@Path("id") id: Long, @Body body: PerfilBody): Usuario
 
     // ---------- ASISTENCIAS ----------
     // El servidor devuelve el calendario del mes ya armado (día -> estado).

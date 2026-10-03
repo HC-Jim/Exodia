@@ -10,6 +10,18 @@ data class LoginBody(val correo: String, val contrasena: String)
 /** Cuerpo para cambiar el estado de recojo de un estudiante. */
 data class EstadoBody(val estado: String)
 
+/**
+ * Cuerpo para actualizar el perfil. Los campos nulos NO se envían (Gson los omite),
+ * así el servidor solo cambia lo que mandamos (estudiante: nombre/celular; conductor:
+ * nombre/celular/correo). La contraseña solo se cambia si se envía no vacía.
+ */
+data class PerfilBody(
+    val nombre: String? = null,
+    val celular: String? = null,
+    val correo: String? = null,
+    val contrasena: String? = null
+)
+
 /** Cuerpo para restablecer la contraseña. */
 data class RestablecerBody(
     val correo: String,

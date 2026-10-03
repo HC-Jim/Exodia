@@ -15,13 +15,14 @@ class ContactoRepository(context: Context) {
 
     private val dbHelper = ContactoDbHelper(context)
 
-    /** Devuelve todos los contactos guardados (el mas nuevo primero). */
-    fun listar(): List<ContactoEmergencia> {
+    /** Devuelve los contactos de UN usuario (el mas nuevo primero). */
+    fun listar(usuarioId: Long): List<ContactoEmergencia> {
         val lista = mutableListOf<ContactoEmergencia>()
 
         val db = dbHelper.readableDatabase
-        val consulta = "SELECT id, nombre, telefono FROM ${ContactoDbHelper.TABLA} ORDER BY id DESC"
-        val cursor = db.rawQuery(consulta, null)
+        val consulta = "SELECT id, nombre, telefono FROM ${ContactoDbHelper.TABLA} " +
+            "WHERE usuario_id = ? ORDER BY id DESC"
+        val cursor = db.rawQuery(consulta, arrayOf(usuarioId.toString()))
 
         while (cursor.moveToNext()) {
             val id = cursor.getLong(0)
@@ -36,9 +37,10 @@ class ContactoRepository(context: Context) {
         return lista
     }
 
-    /** Inserta un contacto nuevo (CREATE). */
-    fun agregar(nombre: String, telefono: String) {
+    /** Inserta un contacto nuevo para ese usuario (CREATE). */
+    fun agregar(usuarioId: Long, nombre: String, telefono: String) {
         val valores = ContentValues()
+        valores.put("usuario_id", usuarioId)
         valores.put("nombre", nombre)
         valores.put("telefono", telefono)
 

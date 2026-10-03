@@ -14,3 +14,7 @@
 .cxx
 local.properties
 .kotlin
+
+# Keystore de firma (NO subir)
+*.jks
+*.keystore

@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import com.example.myapplication.data.repositories.ContactoRepository
 import com.example.myapplication.domain.ContactoEmergencia
+import com.example.myapplication.utils.Sesion
 
 /**
  * ViewModel de contactos de emergencia (SQLite vía ContactoRepository).
@@ -21,17 +22,21 @@ class ContactosViewModel(app: Application) : AndroidViewModel(app) {
     var contactos by mutableStateOf<List<ContactoEmergencia>>(emptyList())
         private set
 
+    // Id del usuario en sesión: sus contactos son privados (no se comparten).
+    private val usuarioId: Long
+        get() = Sesion.usuario?.id ?: -1L
+
     init {
         cargar()
     }
 
     fun cargar() {
-        contactos = repo.listar()
+        contactos = repo.listar(usuarioId)
     }
 
     fun agregar(nombre: String, telefono: String) {
         if (nombre.isBlank()) return          // no guardamos contactos sin nombre
-        repo.agregar(nombre.trim(), telefono.trim())
+        repo.agregar(usuarioId, nombre.trim(), telefono.trim())
         cargar()                              // releer para reflejar el cambio
     }
 

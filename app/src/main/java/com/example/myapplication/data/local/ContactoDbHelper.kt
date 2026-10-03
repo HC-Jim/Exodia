@@ -12,15 +12,17 @@ class ContactoDbHelper(context: Context) :
 
     companion object {
         private const val NOMBRE_BD = "appescolar.db"
-        private const val VERSION_BD = 1
+        private const val VERSION_BD = 2
         const val TABLA = "contactos"
     }
 
     // Se ejecuta la primera vez que se abre la base de datos.
+    // Cada contacto pertenece a un usuario (usuario_id), para que sean privados.
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
             "CREATE TABLE $TABLA (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                "usuario_id INTEGER NOT NULL, " +
                 "nombre TEXT NOT NULL, " +
                 "telefono TEXT)"
         )

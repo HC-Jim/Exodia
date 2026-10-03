@@ -249,14 +249,13 @@ fun RutaActivaScreen(
                     Text("Ruta completada 🎉", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
                     Text("Todos los estudiantes fueron atendidos", color = TextSecondary, fontSize = 13.sp)
                 } else {
-                    var mostrarCancelar by remember { mutableStateOf(false) }
-
                     Text("Próxima entrega", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     Text(proxima.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextPrimary)
                     Text(proxima.direccion, color = TextSecondary, fontSize = 13.sp)
                     Spacer(Modifier.height(10.dp))
 
-                    // Acciones principales: entregar (escaneando su QR) o cancelar (con motivo).
+                    // Entregar (escaneando su QR) o cancelar. Al cancelar se marca como
+                    // cancelado y automáticamente pasa al siguiente estudiante.
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         // Abre la cámara para leer el QR del estudiante y marcarlo como entregado.
                         Button(
@@ -270,45 +269,16 @@ fun RutaActivaScreen(
                             Text("Escanear QR", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
                         Button(
-                            onClick = { mostrarCancelar = true },
+                            onClick = {
+                                viewModel.cancelar(proxima, "Cancelado por el conductor")
+                                Toast.makeText(context, "Recojo cancelado. Siguiente estudiante.", Toast.LENGTH_SHORT).show()
+                            },
                             modifier = Modifier.weight(1f).height(44.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = DangerRed)
                         ) {
                             Text("Cancelar", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
-                    }
-
-                    // Diálogo para elegir el motivo de la cancelación.
-                    if (mostrarCancelar) {
-                        val motivos = listOf(
-                            "No estaba en el paradero",
-                            "El apoderado canceló",
-                            "Dirección incorrecta",
-                            "Otro motivo"
-                        )
-                        androidx.compose.material3.AlertDialog(
-                            onDismissRequest = { mostrarCancelar = false },
-                            confirmButton = {},
-                            dismissButton = {
-                                androidx.compose.material3.TextButton(onClick = { mostrarCancelar = false }) {
-                                    Text("Cerrar")
-                                }
-                            },
-                            title = { Text("Motivo de cancelación") },
-                            text = {
-                                Column {
-                                    for (motivo in motivos) {
-                                        androidx.compose.material3.TextButton(
-                                            onClick = {
-                                                viewModel.cancelar(proxima, motivo)
-                                                mostrarCancelar = false
-                                            }
-                                        ) { Text(motivo) }
-                                    }
-                                }
-                            }
-                        )
                     }
                 }
             }
@@ -317,15 +287,16 @@ fun RutaActivaScreen(
 }
 
 /**
- * Devuelve el estudiante PENDIENTE (no entregado) más cercano a una posición.
- * Compara la distancia (al cuadrado, que basta para saber cuál es el menor).
+ * Devuelve el estudiante PENDIENTE más cercano a una posición.
+ * Se saltan los ya ENTREGADOS y los CANCELADOS (ya fueron atendidos).
  */
 private fun estudianteMasCercano(alumnos: List<Alumno>, desde: LatLng): Alumno? {
     var masCercano: Alumno? = null
     var menorDistancia = Double.MAX_VALUE
 
     for (alumno in alumnos) {
-        if (alumno.estado != EstadoEntrega.ENTREGADO && alumno.lat != null && alumno.lng != null) {
+        val yaAtendido = alumno.estado == EstadoEntrega.ENTREGADO || alumno.estado == EstadoEntrega.CANCELADO
+        if (!yaAtendido && alumno.lat != null && alumno.lng != null) {
             val difLat = alumno.lat - desde.latitude
             val difLng = alumno.lng - desde.longitude
             val distancia = difLat * difLat + difLng * difLng

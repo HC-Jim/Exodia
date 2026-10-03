@@ -71,14 +71,14 @@ fun ConductorApp(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        bottomBar = { BarraInferiorConductor(nav) }
+        bottomBar = { BarraInferiorConductor(nav.tab) { nav.seleccionarTab(it) } }
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
             // Muestra la pantalla de la pestaña activa.
             when (nav.tab) {
                 TabConductor.INICIO -> InicioConductorScreen(
                     onIniciarRuta = { nav.seleccionarTab(TabConductor.SEGUIMIENTO) },
-                    onFinalizarRuta = { nav.seleccionarTab(TabConductor.PERFIL) }
+                    onFinalizarRuta = { nav.seleccionarTab(TabConductor.INICIO) }
                 )
 
                 TabConductor.SEGUIMIENTO -> RutaActivaScreen()

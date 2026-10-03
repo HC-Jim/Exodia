@@ -2,7 +2,9 @@ package com.example.myapplication.data.repositories
 
 import android.content.Context
 import com.example.myapplication.data.models.EstadoBody
+import com.example.myapplication.data.models.PerfilBody
 import com.example.myapplication.domain.Alumno
+import com.example.myapplication.domain.Usuario
 import com.example.myapplication.domain.CalendarioAsistencia
 import com.example.myapplication.domain.Comunicado
 import com.example.myapplication.domain.Nota
@@ -27,6 +29,15 @@ class DatosRepository(context: Context) {
 
     suspend fun obtenerNotas(): List<Nota> = withContext(Dispatchers.IO) {
         api.getNotas()         // directo del servidor
+    }
+
+    /** Actualiza los datos personales del perfil y devuelve el usuario actualizado. */
+    suspend fun actualizarPerfil(id: Long, body: PerfilBody): Usuario? = withContext(Dispatchers.IO) {
+        try {
+            api.actualizarUsuario(id, body)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     // ==========================================================

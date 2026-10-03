@@ -1,7 +1,6 @@
 package com.example.myapplication.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -61,33 +60,6 @@ fun EncabezadoConductor(
             }
         } else {
             Spacer(Modifier.size(36.dp))
-        }
-    }
-}
-
-/** Fila con las "fichas" de los hijos/alumnos asociados (azul y rosa en el mockup). */
-@Composable
-fun ChipsAlumnos(
-    nombres: List<Pair<String, Color>>,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        for ((nombre, color) in nombres) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color)
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(nombre, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            }
         }
     }
 }

@@ -18,27 +18,37 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.LocalPhone
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.utils.Sesion
-import com.example.myapplication.domain.ConductorPerfil
 import com.example.myapplication.ui.components.EncabezadoConductor
 import com.example.myapplication.ui.components.InicialesAvatar
 import com.example.myapplication.ui.theme.DangerRed
@@ -48,25 +58,17 @@ import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
-// Perfil del conductor: sus datos personales y del vehículo, más los contactos de emergencia
-// guardados localmente (SQLite) y la opción de cerrar sesión.
+// Perfil del conductor: datos personales editables (nube), datos del vehículo (solo lectura),
+// contactos de emergencia locales (SQLite) y cerrar sesión.
 @Composable
 fun PerfilConductorScreen(
     modifier: Modifier = Modifier,
-    onCerrarSesion: () -> Unit = {}
+    onCerrarSesion: () -> Unit = {},
+    perfilVM: PerfilViewModel = viewModel()
 ) {
-    // Perfil del conductor tomado del usuario que inició sesión.
     val u = Sesion.usuario
-    val p = ConductorPerfil(
-        nombre = u?.nombre ?: "Conductor",
-        celular = u?.celular ?: "—",
-        correo = u?.correo ?: "—",
-        contactoEmergencia = u?.contactoEmergencia ?: "—",
-        dni = u?.dni ?: "—",
-        licencia = u?.licencia ?: "—",
-        placa = u?.placa ?: "—",
-        zona = u?.zona ?: "—"
-    )
+    var verContrasena by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -76,16 +78,14 @@ fun PerfilConductorScreen(
         EncabezadoConductor(titulo = "Perfil")
 
         InicialesAvatar(
-            nombre = p.nombre,
+            nombre = perfilVM.nombre,
             tamano = 100.dp,
             colorFondo = IndigoPrimary,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(top = 4.dp)
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 4.dp)
         )
         Spacer(Modifier.height(10.dp))
         Text(
-            p.nombre,
+            perfilVM.nombre,
             modifier = Modifier.align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.Bold,
             fontSize = 22.sp,
@@ -93,54 +93,67 @@ fun PerfilConductorScreen(
         )
         Spacer(Modifier.height(20.dp))
 
+        // ---- Datos personales editables (nube) ----
+        Seccion("Información personal (modificable)")
+        Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Campo("Nombre completo", perfilVM.nombre) { perfilVM.nombre = it }
+            Campo("Celular", perfilVM.celular) { perfilVM.celular = it }
+            Campo("Correo", perfilVM.correo) { perfilVM.correo = it }
+            CampoClave("Contraseña", perfilVM.contrasena, verContrasena,
+                onCambio = { perfilVM.contrasena = it },
+                onToggle = { verContrasena = !verContrasena })
+        }
+
+        if (perfilVM.mensaje != null) {
+            Spacer(Modifier.height(8.dp))
+            Text(perfilVM.mensaje!!, color = SuccessGreen, fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp))
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = { perfilVM.cancelar() },
+                modifier = Modifier.weight(1f).height(50.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) { Text("Cancelar", color = TextSecondary) }
+            Button(
+                onClick = { perfilVM.guardar(incluirCorreo = true) },
+                enabled = !perfilVM.guardando,
+                modifier = Modifier.weight(1f).height(50.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
+            ) { Text(if (perfilVM.guardando) "Guardando…" else "Guardar cambios", fontWeight = FontWeight.SemiBold) }
+        }
+
+        // ---- Datos del vehículo / credenciales (solo lectura) ----
+        Spacer(Modifier.height(18.dp))
+        Seccion("Datos del conductor (solo lectura)")
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
             shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Dato(Icons.Filled.LocalPhone, "Celular", p.celular)
-                Dato(Icons.Filled.Email, "Correo", p.correo)
-                Dato(Icons.Filled.MedicalServices, "Contacto emergencia", p.contactoEmergencia)
-                Dato(Icons.Filled.Badge, "DNI", p.dni)
+                Dato(Icons.Filled.Badge, "DNI", u?.dni ?: "—")
+                Dato(Icons.Filled.MedicalServices, "Contacto emergencia", u?.contactoEmergencia ?: "—")
+                Dato(Icons.Filled.CreditCard, "Licencia de conducir", u?.licencia ?: "—", valorColor = SuccessGreen)
+                Dato(Icons.Filled.DirectionsCar, "Placa", u?.placa ?: "—", valorColor = SuccessGreen)
+                Dato(Icons.Filled.Map, "Zona asignada", u?.zona ?: "—", valorColor = SuccessGreen)
             }
         }
 
-        Spacer(Modifier.height(12.dp))
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-        ) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                Dato(Icons.Filled.CreditCard, "Licencia de conducir", p.licencia, valorColor = SuccessGreen)
-                Dato(Icons.Filled.DirectionsCar, "Placa", p.placa, valorColor = SuccessGreen)
-                Dato(Icons.Filled.Map, "Zona asignada", p.zona, valorColor = SuccessGreen)
-            }
-        }
-
+        // ---- Contactos de emergencia (local, SQLite) ----
         Spacer(Modifier.height(20.dp))
-        // Contactos de emergencia guardados localmente en SQLite (agregar / listar / borrar).
-        Text(
-            "CONTACTOS DE EMERGENCIA",
-            modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            color = TextSecondary
-        )
+        Seccion("Contactos de emergencia")
         SeccionContactosEmergencia()
 
         Spacer(Modifier.height(20.dp))
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Column(Modifier.padding(horizontal = 16.dp)) {
             OutlinedButton(
                 onClick = onCerrarSesion,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -156,7 +169,56 @@ fun PerfilConductorScreen(
     }
 }
 
-// Fila de un dato del perfil: ícono + etiqueta + valor (con color opcional para destacarlo).
+@Composable
+private fun Seccion(texto: String) {
+    Text(
+        texto.uppercase(),
+        modifier = Modifier.padding(start = 20.dp, bottom = 8.dp),
+        fontWeight = FontWeight.Bold,
+        fontSize = 12.sp,
+        color = TextSecondary
+    )
+}
+
+@Composable
+private fun Campo(etiqueta: String, valor: String, onChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = valor,
+        onValueChange = onChange,
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        label = { Text(etiqueta) }
+    )
+}
+
+@Composable
+private fun CampoClave(
+    etiqueta: String,
+    valor: String,
+    visible: Boolean,
+    onCambio: (String) -> Unit,
+    onToggle: () -> Unit
+) {
+    OutlinedTextField(
+        value = valor,
+        onValueChange = onCambio,
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        label = { Text(etiqueta) },
+        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            IconButton(onClick = onToggle) {
+                Icon(
+                    if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                    contentDescription = if (visible) "Ocultar contraseña" else "Mostrar contraseña"
+                )
+            }
+        }
+    )
+}
+
 @Composable
 private fun Dato(icono: ImageVector, etiqueta: String, valor: String, valorColor: androidx.compose.ui.graphics.Color = TextPrimary) {
     Row(verticalAlignment = Alignment.CenterVertically) {

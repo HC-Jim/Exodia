@@ -15,8 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DirectionsBus
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -67,17 +68,16 @@ fun SeguimientoApoderadoScreen(
 
     val usuarioId = usuario?.id
 
-    // Pregunta la posición del bus y el estado del estudiante cada 4 s.
+    // Carga inicial (una sola vez). Luego el usuario actualiza con el botón.
     LaunchedEffect(movilidad) {
-        while (true) {
-            if (movilidad.isNotBlank()) {
-                viewModel.refrescar(movilidad)
-            }
-            if (usuarioId != null) {
-                viewModel.cargarMiEstado(usuarioId)
-            }
-            kotlinx.coroutines.delay(4000)
-        }
+        if (movilidad.isNotBlank()) viewModel.refrescar(movilidad)
+        if (usuarioId != null) viewModel.cargarMiEstado(usuarioId)
+    }
+
+    // Vuelve a leer la posición del bus y el estado de recojo, bajo demanda.
+    fun actualizar() {
+        if (movilidad.isNotBlank()) viewModel.refrescar(movilidad)
+        if (usuarioId != null) viewModel.cargarMiEstado(usuarioId)
     }
 
     Column(
@@ -187,6 +187,19 @@ fun SeguimientoApoderadoScreen(
                     )
                     Spacer(Modifier.size(10.dp))
                     Text(textoEstado, color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                }
+
+                Spacer(Modifier.size(14.dp))
+                // Botón para actualizar la ubicación del bus a demanda.
+                Button(
+                    onClick = { actualizar() },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = IndigoPrimary)
+                ) {
+                    Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.size(6.dp))
+                    Text("Actualizar ubicación", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

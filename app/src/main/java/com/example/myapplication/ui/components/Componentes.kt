@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.navigation.NavegadorConductor
+import com.example.myapplication.ui.navigation.TabApoderado
 import com.example.myapplication.ui.navigation.TabConductor
 import com.example.myapplication.ui.theme.AccentBlue
 import com.example.myapplication.ui.theme.AccentPink
@@ -126,18 +126,20 @@ fun MapaSimulado(modifier: Modifier = Modifier) {
     }
 }
 
-/** Barra de navegación inferior con los cuatro destinos principales. */
+/** Barra de navegación inferior del CONDUCTOR. */
 @Composable
-fun BarraInferiorConductor(navegador: NavegadorConductor) {
+fun BarraInferiorConductor(
+    seleccionado: TabConductor,
+    onSeleccionar: (TabConductor) -> Unit
+) {
     NavigationBar(
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp
     ) {
         for (destino in TabConductor.entries) {
-            val seleccionado = navegador.tab == destino
             NavigationBarItem(
-                selected = seleccionado,
-                onClick = { navegador.seleccionarTab(destino) },
+                selected = destino == seleccionado,
+                onClick = { onSeleccionar(destino) },
                 icon = {
                     androidx.compose.material3.Icon(
                         imageVector = destino.icono,
@@ -151,7 +153,41 @@ fun BarraInferiorConductor(navegador: NavegadorConductor) {
                     selectedTextColor = IndigoPrimary,
                     unselectedIconColor = TextSecondary,
                     unselectedTextColor = TextSecondary,
-                    indicatorColor = SurfaceMuted
+                    indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            )
+        }
+    }
+}
+
+/** Barra de navegación inferior del ESTUDIANTE (apoderado). */
+@Composable
+fun BarraInferiorApoderado(
+    seleccionado: TabApoderado,
+    onSeleccionar: (TabApoderado) -> Unit
+) {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp
+    ) {
+        for (destino in TabApoderado.entries) {
+            NavigationBarItem(
+                selected = destino == seleccionado,
+                onClick = { onSeleccionar(destino) },
+                icon = {
+                    androidx.compose.material3.Icon(
+                        imageVector = destino.icono,
+                        contentDescription = destino.etiqueta,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                label = { Text(destino.etiqueta, fontSize = 11.sp) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = IndigoPrimary,
+                    selectedTextColor = IndigoPrimary,
+                    unselectedIconColor = TextSecondary,
+                    unselectedTextColor = TextSecondary,
+                    indicatorColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
         }
