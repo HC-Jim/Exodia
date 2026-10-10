@@ -32,10 +32,8 @@ class ComunicadosViewModel(app: Application) : AndroidViewModel(app) {
     var error by mutableStateOf<String?>(null)
         private set
 
-    init {
-        cargar()
-    }
-
+    // La pantalla llama a cargar() al entrar (LaunchedEffect), por eso no se carga en init
+    // (así se evita hacer la primera petición dos veces).
     fun cargar() {
         viewModelScope.launch {
             cargando = true

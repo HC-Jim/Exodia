@@ -16,19 +16,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BookmarkAdded
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +42,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.domain.Comunicado
 import com.example.myapplication.ui.components.EncabezadoConductor
+import com.example.myapplication.ui.screens.recordatorios.RecordatoriosViewModel
 import com.example.myapplication.ui.theme.AccentBlue
 import com.example.myapplication.ui.theme.IndigoPrimary
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -48,12 +54,18 @@ import com.example.myapplication.ui.theme.SuccessGreen
 import com.example.myapplication.ui.theme.TextPrimary
 import com.example.myapplication.ui.theme.TextSecondary
 
-// Detalle de un evento escolar (contenido de ejemplo fijo). Se abre al tocar un comunicado.
+// Detalle de un comunicado del colegio. Muestra los datos reales del comunicado tocado.
+// Fecha, horario y lugar solo aparecen si el comunicado los trae.
 @Composable
 fun EventoDetalleScreen(
+    comunicado: Comunicado,
     onRetroceder: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // "Guardar" lo agrega a los recordatorios personales (SQLite local).
+    recordatoriosVM: RecordatoriosViewModel = viewModel()
 ) {
+    var guardado by rememberSaveable(comunicado.id) { mutableStateOf(false) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -61,91 +73,112 @@ fun EventoDetalleScreen(
             .verticalScroll(rememberScrollState())
     ) {
         EncabezadoConductor(
-            titulo = "Eventos",
+            titulo = "Comunicado",
             accionIcono = Icons.AutoMirrored.Filled.ArrowBack,
             accionDescripcion = "Volver",
             onAccion = onRetroceder
         )
 
-        // Banner del evento (marcador de posición)
+        // Banner con la fecha corta del comunicado.
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
+                .height(140.dp)
                 .padding(horizontal = 16.dp)
                 .clip(RoundedCornerShape(18.dp))
                 .background(Brush.linearGradient(listOf(SanAgustinRed, IndigoPrimary))),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Filled.Celebration, contentDescription = null, tint = Color.White.copy(alpha = 0.85f), modifier = Modifier.size(56.dp))
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(12.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.9f))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text("EVENTO ESCOLAR", color = SanAgustinRed, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Icon(
+                Icons.Filled.Campaign,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.85f),
+                modifier = Modifier.size(52.dp)
+            )
+            if (comunicado.fecha != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(12.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.9f))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(fechaCorta(comunicado.fecha), color = SanAgustinRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
 
         Spacer(Modifier.height(16.dp))
         Text(
-            "Feria de Ciencias y Día del Logro 2026",
+            comunicado.titulo,
             modifier = Modifier.padding(horizontal = 20.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
             color = TextPrimary
         )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "Acompaña a nuestros alumnos en la presentación de sus proyectos más innovadores del año. Un día dedicado a la ciencia, la creatividad y el logro académico.",
-            modifier = Modifier.padding(horizontal = 20.dp),
-            color = TextSecondary,
-            fontSize = 14.sp
-        )
+        if (!comunicado.detalle.isNullOrBlank()) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                comunicado.detalle,
+                modifier = Modifier.padding(horizontal = 20.dp),
+                color = TextSecondary,
+                fontSize = 14.sp,
+                lineHeight = 21.sp
+            )
+        }
 
         Spacer(Modifier.height(20.dp))
         Column(
             modifier = Modifier.padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Detalle(Icons.Filled.CalendarMonth, "Fecha", "Viernes 24 de Octubre de 2026")
-            Detalle(Icons.Filled.Schedule, "Horario", "09:00 AM – 01:00 PM")
-            Detalle(Icons.Filled.Place, "Lugar", "Patio de Honor y Salón Cultural del Colegio")
+            if (comunicado.fecha != null) {
+                Detalle(Icons.Filled.CalendarMonth, "Fecha", fechaLarga(comunicado.fecha))
+            }
+            if (!comunicado.hora.isNullOrBlank()) {
+                Detalle(Icons.Filled.Schedule, "Horario", comunicado.hora)
+            }
+            if (!comunicado.lugar.isNullOrBlank()) {
+                Detalle(Icons.Filled.Place, "Lugar", comunicado.lugar)
+            }
         }
 
         Spacer(Modifier.height(28.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Button(
+            onClick = {
+                val cuando = listOfNotNull(
+                    comunicado.fecha?.let { fechaLarga(it) },
+                    comunicado.hora?.takeIf { it.isNotBlank() }
+                ).joinToString(" · ")
+                recordatoriosVM.agregar(comunicado.titulo, comunicado.detalle ?: "", cuando)
+                guardado = true
+            },
+            enabled = !guardado,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(50.dp),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = AccentBlue,
+                disabledContainerColor = SuccessGreen,
+                disabledContentColor = Color.White
+            )
         ) {
-            OutlinedButton(
-                onClick = {},
-                modifier = Modifier.weight(1f).height(50.dp),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Icon(Icons.Filled.BookmarkBorder, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(6.dp))
-                Text("Guardar")
-            }
-            Button(
-                onClick = {},
-                modifier = Modifier.weight(1f).height(50.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
-            ) {
-                Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(6.dp))
-                Text("Asistir", fontWeight = FontWeight.SemiBold)
-            }
+            Icon(
+                if (guardado) Icons.Filled.BookmarkAdded else Icons.Filled.BookmarkBorder,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.size(6.dp))
+            Text(
+                if (guardado) "Guardado en recordatorios" else "Guardar en recordatorios",
+                fontWeight = FontWeight.SemiBold
+            )
         }
         Spacer(Modifier.height(20.dp))
     }
 }
 
-// Fila de un dato del evento (ícono + etiqueta + valor): fecha, horario, lugar.
+// Fila de un dato del comunicado (ícono + etiqueta + valor): fecha, horario, lugar.
 @Composable
 private fun Detalle(icono: ImageVector, etiqueta: String, valor: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -170,6 +203,16 @@ private fun Detalle(icono: ImageVector, etiqueta: String, valor: String) {
 @Composable
 private fun EventoDetallePreview() {
     MyApplicationTheme {
-        EventoDetalleScreen(onRetroceder = {})
+        EventoDetalleScreen(
+            comunicado = Comunicado(
+                id = 1,
+                titulo = "Reunión de padres",
+                detalle = "Reunión general el viernes a las 6:00 pm.",
+                fecha = "2026-09-20",
+                hora = "6:00 pm",
+                lugar = "Auditorio del colegio"
+            ),
+            onRetroceder = {}
+        )
     }
 }

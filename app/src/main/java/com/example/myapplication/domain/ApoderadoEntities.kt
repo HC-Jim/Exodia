@@ -16,7 +16,9 @@ data class Comunicado(
     val id: Long = 0,
     val titulo: String = "",
     val detalle: String? = null,
-    val fecha: String? = null
+    val fecha: String? = null,
+    val hora: String? = null,    // ej. "6:00 pm" (opcional; si el backend no lo envía, no se muestra)
+    val lugar: String? = null    // ej. "Auditorio del colegio"
 )
 
 /**

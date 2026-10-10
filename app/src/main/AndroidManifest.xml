@@ -4,8 +4,9 @@
 
     <!-- Necesario para que la app consuma la API en Render -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Ubicación del conductor para el seguimiento en el mapa -->
+    <!-- Ubicación (fina y aproximada). COARSE es obligatorio junto a FINE desde Android 12 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Cámara para escanear el QR del estudiante -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
