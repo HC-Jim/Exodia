@@ -19,13 +19,12 @@ import com.example.myapplication.ui.screens.auth.LoginScreen
 import com.example.myapplication.ui.screens.auth.RecuperarScreen
 import com.example.myapplication.ui.screens.auth.RegistroScreen
 import com.example.myapplication.ui.screens.auth.SplashScreen
-import com.example.myapplication.ui.screens.auth.TwoFactorScreen
 import com.example.myapplication.ui.navigation.ApoderadoApp
 import com.example.myapplication.ui.navigation.ConductorApp
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 // Pantallas por las que pasa la app. La navegación se controla cambiando de fase.
-private enum class FaseApp { SPLASH, LOGIN, REGISTRO, RECUPERAR, DOS_PASOS, CONDUCTOR, ESTUDIANTE }
+private enum class FaseApp { SPLASH, LOGIN, REGISTRO, RECUPERAR, CONDUCTOR, ESTUDIANTE }
 
 // Única Activity de la app; todo lo demás son composables de Jetpack Compose.
 class MainActivity : ComponentActivity() {
@@ -59,7 +58,10 @@ private fun AppRaiz() {
     when (fase) {
         FaseApp.SPLASH -> SplashScreen(onListo = { fase = FaseApp.LOGIN })
         FaseApp.LOGIN -> LoginScreen(
-            onIniciar = { fase = FaseApp.DOS_PASOS },
+            // Tras el login, entra directo al rol de la cuenta (Estudiante o Conductor).
+            onIniciar = {
+                fase = if (Sesion.usuario?.rol == "CONDUCTOR") FaseApp.CONDUCTOR else FaseApp.ESTUDIANTE
+            },
             onRegistrar = { fase = FaseApp.REGISTRO },
             onOlvide = { fase = FaseApp.RECUPERAR }
         )
@@ -70,13 +72,6 @@ private fun AppRaiz() {
         FaseApp.RECUPERAR -> RecuperarScreen(
             onListo = { fase = FaseApp.LOGIN },
             onVolver = { fase = FaseApp.LOGIN }
-        )
-        FaseApp.DOS_PASOS -> TwoFactorScreen(
-            // Tras validar, entra directo al rol de la cuenta (Estudiante o Conductor).
-            onValidar = {
-                fase = if (Sesion.usuario?.rol == "CONDUCTOR") FaseApp.CONDUCTOR else FaseApp.ESTUDIANTE
-            },
-            onCancelar = { fase = FaseApp.LOGIN }
         )
         FaseApp.CONDUCTOR -> ConductorApp(onCerrarSesion = { fase = FaseApp.LOGIN })
         FaseApp.ESTUDIANTE -> ApoderadoApp(onCerrarSesion = { fase = FaseApp.LOGIN })

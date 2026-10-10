@@ -45,11 +45,9 @@ class DatosRepository(context: Context) {
     // ==========================================================
     /** Lista de estudiantes que el conductor debe recoger. */
     suspend fun obtenerEstudiantes(movilidad: String): List<Alumno> = withContext(Dispatchers.IO) {
-        try {
-            api.getEstudiantes(movilidad)   // el servidor ya devuelve la forma "alumno"
-        } catch (e: Exception) {
-            emptyList()
-        }
+        // Sin try/catch: si la API falla, la excepción sube al ViewModel para
+        // mostrar el error en vez de ocultarlo como "lista vacía".
+        api.getEstudiantes(movilidad)   // el servidor ya devuelve la forma "alumno"
     }
 
     /** Marca al estudiante como ENTREGADO (directo en la API). */

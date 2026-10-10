@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.Alumno
 import com.example.myapplication.domain.EstadoEntrega
@@ -54,6 +55,9 @@ fun AlumnosEntregadosScreen(
     // El ViewModel trae los estudiantes desde la API.
     viewModel: AlumnosViewModel = viewModel()
 ) {
+    // Recarga al entrar para ver estudiantes recién registrados (no solo al abrir la app).
+    LaunchedEffect(Unit) { viewModel.cargar() }
+
     val alumnos = viewModel.alumnos
     val entregados = viewModel.entregados.size   // solo para el resumen del encabezado
 

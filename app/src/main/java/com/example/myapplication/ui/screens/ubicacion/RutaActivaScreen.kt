@@ -116,20 +116,28 @@ fun RutaActivaScreen(
     // Próximo estudiante a recoger: el pendiente más cercano al conductor.
     val proxima = estudianteMasCercano(viewModel.alumnos, posConductor)
 
+    val permisosUbicacion = arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION
+    )
     var tienePermiso by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
-                PackageManager.PERMISSION_GRANTED
+            permisosUbicacion.any {
+                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            }
         )
     }
-    // Pide el permiso de ubicación al abrir la pantalla.
+    // Pide FINE y COARSE juntos (obligatorio desde Android 12).
     val pedirPermiso = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { concedido -> tienePermiso = concedido }
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permisos -> tienePermiso = permisos.values.any { it } }
 
     LaunchedEffect(Unit) {
-        if (!tienePermiso) pedirPermiso.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        if (!tienePermiso) pedirPermiso.launch(permisosUbicacion)
     }
+
+    // Recarga la lista de estudiantes al entrar (para ver registros nuevos).
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     // Con permiso, envía la posición al servidor cada 5 segundos.
     LaunchedEffect(tienePermiso) {
